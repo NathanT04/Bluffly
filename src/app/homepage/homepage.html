@@ -1,0 +1,41 @@
+<div class="homepage">
+  <div class="glow"></div>
+
+  <app-nav-bar [active]="active" (changeTab)="setActive($event)"></app-nav-bar>
+
+  <main>
+    <ng-container [ngSwitch]="active">
+      <section *ngSwitchCase="'Home'" class="hero">
+        <div class="hero-content">
+          <h1>Bluffly</h1>
+          <p>
+            Practice your poker skills, learn optimal strategies, <br />
+            and build your confidence at the table.
+          </p>
+
+          <button>Register</button>
+        </div>
+
+        <div class="hero-side">
+          <app-home-tab></app-home-tab>
+        </div>
+      </section>
+
+      <section *ngSwitchCase="'Simulation'" class="tab-section">
+        <app-simulation-tab></app-simulation-tab>
+      </section>
+
+      <section *ngSwitchCase="'Analyzer'" class="tab-section">
+        <app-analyzer-tab></app-analyzer-tab>
+      </section>
+
+      <section *ngSwitchCase="'Lessons'" class="tab-section">
+        <app-lessons-tab></app-lessons-tab>
+      </section>
+    </ng-container>
+  </main>
+
+  <footer>
+    © {{ currentYear }} Bluffly
+  </footer>
+</div>

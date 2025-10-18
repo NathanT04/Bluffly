@@ -1,0 +1,10 @@
+<nav class="navbar">
+  <button
+    *ngFor="let tab of tabs"
+    type="button"
+    [class.active]="tab === active"
+    (click)="select(tab)"
+  >
+    {{ tab }}
+  </button>
+</nav>

@@ -1,0 +1,108 @@
+.homepage {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom right, #1f2937, #374151, #111827);
+  color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+
+  main {
+    max-width: 70rem;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 5rem;
+    flex: 1;
+    width: 100%;
+  }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 3rem;
+    padding-top: 2rem;
+
+    .hero-content {
+      flex: 1;
+
+      h1 {
+        font-size: 4.5rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #f87171, #d1d5db, #f9fafb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      p {
+        margin-top: 2rem;
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+        color: rgba(243, 244, 246, 0.85);
+      }
+
+      button {
+        margin-top: 2.5rem;
+        border: 2px solid #dc2626;
+        background-color: #dc2626;
+        color: white;
+        font-weight: 600;
+        font-size: 1.125rem;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        transition: background-color 0.2s ease-in-out;
+
+        &:hover {
+          background-color: #ef4444;
+        }
+
+        &:focus-visible {
+          outline: 2px solid #f87171;
+        }
+      }
+    }
+
+    .hero-side {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+
+      app-home-tab {
+        width: 100%;
+        max-width: 24rem;
+      }
+    }
+  }
+
+  .tab-section {
+    background-color: rgba(17, 24, 39, 0.65);
+    padding: 2rem 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(12px);
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .hero-side {
+        width: 100%;
+        justify-content: flex-start;
+
+        app-home-tab {
+          max-width: none;
+        }
+      }
+    }
+  }
+
+  footer {
+    margin-top: auto;
+    padding: 2rem 0;
+    text-align: center;
+    color: rgba(243, 244, 246, 0.6);
+  }
+}
