@@ -1,0 +1,15 @@
+<section class="board-input">
+  <h3>Board</h3>
+
+  <div class="card-selectors">
+    <label *ngFor="let options of cardOptions; index as i; trackBy: trackByIndex">
+      <span>{{ stageLabels[i] }}</span>
+      <select [ngModel]="selectedCards[i]" (ngModelChange)="onSelectChange(i, $event)">
+        <option value="">Select Card</option>
+        <option *ngFor="let card of options; trackBy: trackByOption" [value]="card">
+          {{ card }}
+        </option>
+      </select>
+    </label>
+  </div>
+</section>
