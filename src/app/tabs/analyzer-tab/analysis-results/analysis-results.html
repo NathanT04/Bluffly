@@ -1,0 +1,22 @@
+<section class="analysis-results">
+  <h3>Results</h3>
+
+  <div class="result-grid">
+    <div class="result-card">
+      <span>Equity</span>
+      <strong>{{ equity ?? '—' }}</strong>
+    </div>
+    <div class="result-card">
+      <span>Pot Odds</span>
+      <strong>{{ potOdds ?? '—' }}</strong>
+    </div>
+  </div>
+
+  <p class="message" *ngIf="message">
+    {{ message }}
+  </p>
+
+  <p class="hint" *ngIf="!hasSubmission">
+    Select your cards and press “Calculate Equity” to request results.
+  </p>
+</section>

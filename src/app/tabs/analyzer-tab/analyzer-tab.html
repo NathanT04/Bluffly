@@ -1,6 +1,38 @@
-<div class="tab">
-  <h2>Analyzer</h2>
-  <p>
-    Upload hand histories to get leak reports and spot suboptimal play patterns.
-  </p>
+<div class="analyzer-tab">
+  <header>
+    <h2>Hand Analysis</h2>
+    <p>
+      Set up a hand, send it to the backend, and review your equity before committing chips.
+    </p>
+  </header>
+
+  <section class="inputs">
+    <app-hand-input
+      [cardOptions]="handOptions"
+      [selectedCards]="holeCards"
+      (selectedCardsChange)="onHoleCardChange($event)"
+    ></app-hand-input>
+
+    <app-board-input
+      [cardOptions]="boardOptions"
+      [selectedCards]="boardCards"
+      (selectedCardsChange)="onBoardCardChange($event)"
+    ></app-board-input>
+  </section>
+
+  <button
+    type="button"
+    class="calculate"
+    [disabled]="isCalculateDisabled"
+    (click)="calculateEquity()"
+  >
+    Calculate Equity
+  </button>
+
+  <app-analysis-results
+    [equity]="equity"
+    [potOdds]="potOdds"
+    [message]="resultMessage"
+    [hasSubmission]="hasSubmission"
+  ></app-analysis-results>
 </div>
