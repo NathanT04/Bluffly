@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { HandInput } from './hand-input/hand-input';
 import { BoardInput } from './board-input/board-input';
 import { AnalysisResults } from './analysis-results/analysis-results';
@@ -7,13 +8,15 @@ import { AnalysisResults } from './analysis-results/analysis-results';
 @Component({
   selector: 'app-analyzer-tab',
   standalone: true,
-  imports: [CommonModule, HandInput, BoardInput, AnalysisResults],
+  imports: [CommonModule, HttpClientModule, HandInput, BoardInput, AnalysisResults],
   templateUrl: './analyzer-tab.html',
   styleUrls: ['./analyzer-tab.scss']
 })
+
 export class AnalyzerTab implements OnInit {
   private readonly ranks = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'];
   private readonly suits = ['s', 'h', 'd', 'c'];
+  private readonly simulationIterations = 25000;
 
   readonly allCards = this.ranks.flatMap(rank => this.suits.map(suit => `${rank}${suit}`));
 
@@ -26,13 +29,16 @@ export class AnalyzerTab implements OnInit {
   potOdds: string | null = null;
   resultMessage = '';
   hasSubmission = false;
+  isCalculating = false;
+
+  constructor(private readonly http: HttpClient) {}
 
   ngOnInit(): void {
     this.updateOptions();
   }
 
   get isCalculateDisabled(): boolean {
-    return this.holeCards.some(card => !card);
+    return this.isCalculating || this.holeCards.some(card => !card);
   }
 
   onHoleCardChange(event: { index: number; value: string }) {
@@ -55,10 +61,45 @@ export class AnalyzerTab implements OnInit {
   }
 
   calculateEquity() {
+    if (this.isCalculating) {
+      return;
+    }
+
     this.hasSubmission = true;
     this.equity = null;
     this.potOdds = null;
-    this.resultMessage = 'backend is mr frogged';
+    this.resultMessage = 'Running equity simulation against a random opponent range...';
+    this.isCalculating = true;
+
+    const heroHand = [...this.holeCards] as [string, string];
+    const board = this.boardCards.filter((card): card is string => Boolean(card));
+
+    this.http
+      .post<AnalyzerResponse>('/api/analyzer/equity', {
+        hero: heroHand,
+        board,
+        iterations: this.simulationIterations
+      })
+      .subscribe({
+        next: response => {
+          const equityPercentage = response?.equity?.percentage ?? 0;
+          this.equity = `${equityPercentage.toFixed(1)}%`;
+          this.potOdds = this.formatPotOddsRatio(equityPercentage);
+          this.resultMessage =
+            'Pot odds show the minimum pot-to-call ratio to break even with your current equity.';
+          this.isCalculating = false;
+        },
+        error: error => {
+          console.error('Failed to calculate poker equity', error);
+          const backendMessage = (error?.error && typeof error.error === 'object' && 'error' in error.error)
+            ? String(error.error.error)
+            : null;
+          this.resultMessage =
+            backendMessage ||
+            'Failed to calculate equity. Please try again or check the console for more details.';
+          this.isCalculating = false;
+        }
+      });
   }
 
   private isCardSelectedElsewhere(card: string, index: number, stack: string[]): boolean {
@@ -84,4 +125,28 @@ export class AnalyzerTab implements OnInit {
       this.allCards.filter(card => !holeSet.has(card) && !this.isCardSelectedElsewhere(card, index, this.boardCards))
     );
   }
+
+  private formatPotOddsRatio(equityPercentage: number): string {
+    const equity = equityPercentage / 100;
+    if (equity <= 0) {
+      return '0.00 : 1';
+    }
+    if (equity >= 1) {
+      return '∞ : 1';
+    }
+
+    const ratio = 1 / equity - 1;
+    return `${ratio.toFixed(2)} : 1`;
+  }
 }
+
+type AnalyzerResponse = {
+  equity: {
+    percentage: number;
+    wins: number;
+    ties: number;
+    count: number;
+  };
+  board: string[];
+  iterations: number;
+};
