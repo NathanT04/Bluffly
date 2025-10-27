@@ -2,18 +2,19 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
 
-
 ## 1. Install Dependencies
-** Backend **
+**Backend**
 ```cd backend
-npm install```
+npm install
+```
 
-** Frontend **
+**Frontend**
 ```cd frontend
-npm install```
+npm install
+```
 
 ## 2. Deploy
-** Run Both Servers in Seperate Terminals**
+**Run Both Servers in Seperate Terminals**
 **Backend**
 ```
 cd backend
