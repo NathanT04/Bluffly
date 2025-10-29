@@ -9,4 +9,113 @@
     font-size: 1.125rem;
     color: rgba(243, 244, 246, 0.85);
   }
+
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    button {
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      cursor: pointer;
+    }
+  }
+
+  /* Poker table */
+  .table {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  .felt {
+    position: relative;
+    width: min(900px, 95%);
+    height: 420px;
+    border-radius: 9999px;
+    background: radial-gradient(ellipse at center, #0b5d3b 0%, #0a4d32 55%, #083a26 100%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6), 0 12px 28px rgba(0,0,0,0.45);
+    border: 8px solid #2c1b0f; /* wood rail */
+  }
+
+  .board-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .board-cards {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pot {
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+
+  .seats {
+    position: absolute;
+    inset: 0;
+  }
+
+  .seat {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .seat.top {
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat.bottom {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .seat .name {
+    padding: 4px 8px;
+    border-radius: 9999px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    font-size: 0.85rem;
+  }
+
+  .seat .hand {
+    display: flex;
+    gap: 8px;
+  }
+
+  .phase-label {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 600;
+  }
+
+  .empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(255,255,255,0.85);
+  }
 }

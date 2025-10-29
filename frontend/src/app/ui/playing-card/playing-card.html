@@ -1,0 +1,12 @@
+<div class="playing-card" [class.red]="isRed" [class.blank]="!card">
+  <div class="corner tl">
+    <span class="rank">{{ rank }}</span>
+    <span class="suit">{{ symbol }}</span>
+  </div>
+  <div class="center">{{ symbol }}</div>
+  <div class="corner br">
+    <span class="rank">{{ rank }}</span>
+    <span class="suit">{{ symbol }}</span>
+  </div>
+</div>
+
