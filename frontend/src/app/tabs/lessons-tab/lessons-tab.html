@@ -1,6 +1,24 @@
-<div class="tab">
+<div class="tab lessons-tab">
   <h2>Lessons</h2>
   <p>
-    Bite-sized concepts, quizzes, and drills to improve decision-making.
+    Bite-sized concepts, quizzes, and scenarios to improve decision-making.
   </p>
+  <div class="lesson-grid">
+    <article
+      class="lesson-card"
+      *ngFor="let lesson of lessons"
+      [attr.data-difficulty]="lesson.slug"
+    >
+      <header class="lesson-card__header">
+        <span class="lesson-card__difficulty">{{ lesson.difficulty }}</span>
+        <h3 class="lesson-card__title">{{ lesson.title }}</h3>
+      </header>
+      <p class="lesson-card__description">
+        {{ lesson.description }}
+      </p>
+      <button type="button" class="lesson-card__cta">
+        {{ lesson.cta }}
+      </button>
+    </article>
+  </div>
 </div>
