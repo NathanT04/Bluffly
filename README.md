@@ -19,7 +19,7 @@ npm install
 ```
 cd backend
 node app.js
-npm start (if applicable)
+npm start
 ```
 
 **Frontend**
