@@ -1,24 +1,93 @@
 <div class="tab lessons-tab">
-  <h2>Lessons</h2>
-  <p>
-    Bite-sized concepts, quizzes, and scenarios to improve decision-making.
-  </p>
-  <div class="lesson-grid">
-    <article
-      class="lesson-card"
-      *ngFor="let lesson of lessons"
-      [attr.data-difficulty]="lesson.slug"
-    >
-      <header class="lesson-card__header">
-        <span class="lesson-card__difficulty">{{ lesson.difficulty }}</span>
-        <h3 class="lesson-card__title">{{ lesson.title }}</h3>
+  <ng-container *ngIf="!selectedLesson; else lessonDetail">
+    <h2>Lessons</h2>
+    <p>
+      Bite-sized concepts, quizzes, and scenarios to improve decision-making.
+    </p>
+    <div class="lesson-grid">
+      <article
+        class="lesson-card"
+        *ngFor="let lesson of lessons"
+        [attr.data-difficulty]="lesson.slug"
+      >
+        <header class="lesson-card__header">
+          <span class="lesson-card__difficulty">{{ lesson.difficulty }}</span>
+          <h3 class="lesson-card__title">{{ lesson.title }}</h3>
+        </header>
+        <p class="lesson-card__description">
+          {{ lesson.description }}
+        </p>
+        <button type="button" class="lesson-card__cta" (click)="startLesson(lesson.slug)">
+          {{ lesson.cta }}
+        </button>
+      </article>
+    </div>
+  </ng-container>
+
+  <ng-template #lessonDetail>
+    <div class="lesson-detail">
+      <button type="button" class="lesson-detail__back" (click)="exitLesson()">Back to lessons</button>
+
+      <header class="lesson-detail__header">
+        <span class="lesson-detail__difficulty">{{ selectedLesson?.difficulty }} Mode</span>
+        <h2 class="lesson-detail__title">{{ selectedLesson?.title }}</h2>
+        <p class="lesson-detail__description">
+          {{ selectedLesson?.description }}
+        </p>
       </header>
-      <p class="lesson-card__description">
-        {{ lesson.description }}
-      </p>
-      <button type="button" class="lesson-card__cta">
-        {{ lesson.cta }}
-      </button>
-    </article>
-  </div>
+
+      <section class="lesson-detail__body">
+        <article
+          class="lesson-question"
+          *ngFor="let question of selectedLesson?.questions; let questionIndex = index"
+        >
+          <header class="lesson-question__header">
+            <span class="lesson-question__index">Question {{ questionIndex + 1 }}</span>
+            <h3 class="lesson-question__prompt">{{ question.prompt }}</h3>
+          </header>
+
+          <ul class="lesson-question__options">
+            <li
+              class="lesson-question__option"
+              *ngFor="let option of question.options; let optionIndex = index"
+            >
+              <button
+                type="button"
+                (click)="selectOption(question.id, optionIndex)"
+                [class.is-selected]="selectedOptions[question.id] === optionIndex"
+                [disabled]="submittedAnswers[question.id] !== undefined"
+                [attr.aria-pressed]="selectedOptions[question.id] === optionIndex"
+              >
+                <span class="option-label">
+                  {{ optionLabels[optionIndex] }}
+                </span>
+                <span class="option-text">{{ option }}</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="lesson-question__actions">
+            <button
+              type="button"
+              class="lesson-question__submit"
+              (click)="submitAnswer(question.id)"
+              [disabled]="
+                selectedOptions[question.id] === null ||
+                selectedOptions[question.id] === undefined ||
+                submittedAnswers[question.id] !== undefined
+              "
+            >
+              Submit answer
+            </button>
+            <p
+              *ngIf="submittedAnswers[question.id] !== undefined"
+              class="lesson-question__status"
+            >
+              Answer submitted.
+            </p>
+          </div>
+        </article>
+      </section>
+    </div>
+  </ng-template>
 </div>
