@@ -11,17 +11,26 @@
   }
 
   .controls {
-    display: flex;
-    gap: 0.5rem;
     margin-bottom: 1rem;
 
-    button {
-      padding: 0.5rem 0.75rem;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
+    .btn {
+      padding: 0.5rem 0.85rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
       color: #fff;
       cursor: pointer;
+
+      &:hover:not(:disabled),
+      &:focus-visible:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
     }
   }
 
