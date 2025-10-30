@@ -1,7 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { MongoClient } = require('mongodb');
-
+const { connectMongoose, disconnectMongoose } = require('../services/mongoClient');
+const LessonQuestion = require('../models/lessonQuestion');
 
 function parseCsv(content) {
   const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
@@ -95,61 +95,52 @@ async function readCsv(filePath) {
   return rows.map((values) => transformRow(normalizeRow(headers, values)));
 }
 
-async function importCsvEntries({ uri, dbName, collectionName, csvPath }) {
-  if (!uri) {
-    throw new Error('Missing MONGODB_URI environment variable.');
+async function importCsvEntries({ csvPath }) {
+  const documents = await readCsv(csvPath);
+  if (documents.length === 0) {
+    console.log('No rows found in CSV; nothing to insert.');
+    return;
   }
 
-  const client = new MongoClient(uri);
+  await connectMongoose();
 
-  try {
-    const documents = await readCsv(csvPath);
-    if (documents.length === 0) {
-      console.log('No rows found in CSV; nothing to insert.');
-      return;
-    }
+  const operations = documents
+    .filter((doc) => doc.id)
+    .map((doc) => ({
+      updateOne: {
+        filter: { id: doc.id },
+        update: { $set: doc },
+        upsert: true
+      }
+    }));
 
-    await client.connect();
-    const collection = client.db(dbName).collection(collectionName);
-
-    const operations = documents
-      .filter((doc) => doc.id)
-      .map((doc) => ({
-        updateOne: {
-          filter: { id: doc.id },
-          update: { $set: doc },
-          upsert: true,
-        },
-      }));
-
-    if (operations.length === 0) {
-      throw new Error('No rows contained an "id" column to use for upserting.');
-    }
-
-    const result = await collection.bulkWrite(operations, { ordered: false });
-
-    console.log(
-      `Upserted ${result.upsertedCount} documents, matched ${result.matchedCount}, modified ${result.modifiedCount}.`
-    );
-  } finally {
-    await client.close();
+  if (operations.length === 0) {
+    throw new Error('No rows contained an "id" column to use for upserting.');
   }
+
+  const result = await LessonQuestion.bulkWrite(operations, { ordered: false });
+
+  console.log(
+    `Upserted ${result.upsertedCount} documents, matched ${result.matchedCount}, modified ${result.modifiedCount}.`
+  );
 }
 
 async function main() {
   const csvDefaultPath = path.resolve(__dirname, '../../pokerLessonQuiz.csv');
   const csvPath = process.env.CSV_PATH ? path.resolve(process.env.CSV_PATH) : csvDefaultPath;
 
-  await importCsvEntries({
-    uri: process.env.MONGODB_URI,
-    dbName: process.env.MONGODB_DB || 'bluffly',
-    collectionName: process.env.MONGODB_COLLECTION || 'pokerLessonQuiz',
-    csvPath,
-  });
+  if (!process.env.MONGODB_URI) {
+    throw new Error('Missing MONGODB_URI environment variable.');
+  }
+
+  try {
+    await importCsvEntries({ csvPath });
+  } finally {
+    await disconnectMongoose();
+  }
 }
 
 main().catch((error) => {
   console.error('Failed to import CSV into MongoDB:', error);
   process.exitCode = 1;
 });
-

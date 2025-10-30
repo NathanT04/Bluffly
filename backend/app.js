@@ -1,14 +1,18 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
 const analyzerRoutes = require('./routes/analyzerRoutes');
+const lessonRoutes = require('./routes/lessonRoutes');
 const tableRoutes = require('./routes/tableRoutes');
+const { connectMongoose } = require('./services/mongoClient');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.use('/api/analyzer', analyzerRoutes);
+app.use('/api/lessons', lessonRoutes);
 app.use('/api/table', tableRoutes);
 
 app.use((req, res) => {
@@ -23,11 +27,19 @@ app.use((error, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
-module.exports = app;
-
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Bluffly backend listening on port ${PORT}`);
-  });
+
+  connectMongoose()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Bluffly backend listening on port ${PORT}`);
+      });
+    })
+    .catch(error => {
+      console.error('Failed to connect to MongoDB:', error);
+      process.exit(1);
+    });
 }
+
+module.exports = app;
