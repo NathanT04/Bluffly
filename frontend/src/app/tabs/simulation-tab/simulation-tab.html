@@ -1,11 +1,23 @@
-<div class="tab">
-  <h2>Poker Simulation</h2>
-
-  <div class="controls">
-    <button (click)="newGame()" [disabled]="busy">New Game</button>
-    <button (click)="nextStreet()" [disabled]="busy || !snapshot || snapshot.phase === 'showdown'">
-      Next Street
-    </button>
+<div class="tab container-xl py-5">
+  <div class="row g-4 mb-3 align-items-center">
+    <div class="col-lg-6">
+      <h2>Poker Simulation</h2>
+      <p class="mb-0">
+        Run a full hand against a simulated opponent and watch the streets unfold.
+      </p>
+    </div>
+    <div class="col-lg-6">
+      <div class="controls d-flex flex-wrap gap-2 justify-content-lg-end">
+        <button class="btn btn-outline-light" (click)="newGame()" [disabled]="busy">New Game</button>
+        <button
+          class="btn btn-outline-light"
+          (click)="nextStreet()"
+          [disabled]="busy || !snapshot || snapshot.phase === 'showdown'"
+        >
+          Next Street
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="table">
@@ -42,4 +54,5 @@
       </ng-template>
     </div>
   </div>
+
 </div>

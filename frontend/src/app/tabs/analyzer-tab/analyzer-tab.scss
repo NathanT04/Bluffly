@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  padding-left: clamp(1rem, 4vw, 2.5rem);
+  padding-right: clamp(1rem, 4vw, 2.5rem);
 
   header {
     h2 {
@@ -18,17 +20,19 @@
   }
 
   .inputs {
-    display: grid;
-    gap: 2rem;
     background-color: rgba(17, 24, 39, 0.55);
     border-radius: 1.25rem;
     border: 1px solid rgba(148, 163, 184, 0.2);
     padding: 2rem;
     backdrop-filter: blur(10px);
 
-    @media (min-width: 768px) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .row {
+      margin: 0;
     }
+  }
+
+  .action-row {
+    align-self: flex-start;
   }
 
   .calculate {
@@ -60,4 +64,3 @@
     }
   }
 }
-
