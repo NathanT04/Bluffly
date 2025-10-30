@@ -20,6 +20,30 @@ export interface LessonQuizResponse {
   questions: LessonQuizQuestion[];
 }
 
+export interface LessonQuizResult {
+  id?: string;
+  slug: LessonDifficultySlug;
+  difficulty: string;
+  correct: number;
+  total: number;
+  percentage: number;
+  submittedAt: string;
+}
+
+export interface LessonQuizResultListResponse {
+  count: number;
+  results: LessonQuizResult[];
+}
+
+export interface LessonQuizResultPayload {
+  slug: LessonDifficultySlug;
+  difficulty: string;
+  correct: number;
+  total: number;
+  percentage: number;
+  metadata?: Record<string, unknown>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LessonService {
   constructor(private readonly http: HttpClient) {}
@@ -31,5 +55,16 @@ export class LessonService {
 
     return this.http.get<LessonQuizResponse>('/api/lessons/quiz', { params });
   }
-}
 
+  submitQuizResult(payload: LessonQuizResultPayload): Observable<LessonQuizResult> {
+    return this.http.post<LessonQuizResult>('/api/lessons/results', payload);
+  }
+
+  getRecentResults(slug?: LessonDifficultySlug, limit = 10): Observable<LessonQuizResultListResponse> {
+    let params = new HttpParams().set('limit', limit.toString());
+    if (slug) {
+      params = params.set('slug', slug);
+    }
+    return this.http.get<LessonQuizResultListResponse>('/api/lessons/results', { params });
+  }
+}

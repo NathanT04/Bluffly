@@ -4,7 +4,8 @@ import { firstValueFrom } from 'rxjs';
 import {
   LessonService,
   LessonDifficultySlug,
-  LessonQuizQuestion
+  LessonQuizQuestion,
+  LessonQuizResult
 } from '../../services/lesson.service';
 
 type LessonDifficulty = LessonDifficultySlug;
@@ -36,6 +37,9 @@ export class LessonsTab {
   loadError: string | null = null;
   quizSubmitted = false;
   quizSummary: { correct: number; total: number; percentage: number } | null = null;
+  isSavingResult = false;
+  resultSaveError: string | null = null;
+  recentResults: LessonQuizResult[] = [];
 
   readonly lessons: LessonSummary[] = [
     {
@@ -72,6 +76,7 @@ export class LessonsTab {
     this.selectedLessonSlug = slug;
     this.resetProgress();
     void this.loadQuiz(slug);
+    void this.loadRecentResults(slug);
   }
 
   exitLesson() {
@@ -81,6 +86,8 @@ export class LessonsTab {
     this.isQuizLoading = false;
     this.quizSubmitted = false;
     this.quizSummary = null;
+    this.resultSaveError = null;
+    this.recentResults = [];
     this.resetProgress();
   }
 
@@ -153,6 +160,7 @@ export class LessonsTab {
     this.quizSubmitted = true;
     const percentage = Math.round((correct / gradableQuestions.length) * 100);
     this.quizSummary = { correct, total: gradableQuestions.length, percentage };
+    void this.persistQuizResult();
     this.scrollToQuizTop();
   }
 
@@ -188,6 +196,7 @@ export class LessonsTab {
     this.selectedOptions = {};
     this.quizSubmitted = false;
     this.quizSummary = null;
+    this.resultSaveError = null;
   }
 
   private scrollToQuizTop() {
@@ -198,5 +207,45 @@ export class LessonsTab {
     setTimeout(() => {
       this.quizTopRef?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 0);
+  }
+
+  private async persistQuizResult() {
+    if (!this.quizSummary || !this.selectedLessonSlug || !this.selectedLesson) {
+      return;
+    }
+
+    this.isSavingResult = true;
+    this.resultSaveError = null;
+
+    try {
+      await firstValueFrom(
+        this.lessonService.submitQuizResult({
+          slug: this.selectedLessonSlug,
+          difficulty: this.selectedLesson.difficulty,
+          correct: this.quizSummary.correct,
+          total: this.quizSummary.total,
+          percentage: this.quizSummary.percentage,
+          metadata: {
+            questionCount: this.quizQuestions.length
+          }
+        })
+      );
+      await this.loadRecentResults(this.selectedLessonSlug);
+    } catch (error) {
+      console.error('Failed to save quiz result', error);
+      this.resultSaveError = 'Unable to save your quiz result right now.';
+    } finally {
+      this.isSavingResult = false;
+    }
+  }
+
+  private async loadRecentResults(slug: LessonDifficulty) {
+    try {
+      const response = await firstValueFrom(this.lessonService.getRecentResults(slug, 6));
+      this.recentResults = response.results;
+    } catch (error) {
+      console.error('Failed to load quiz history', error);
+      this.recentResults = [];
+    }
   }
 }
