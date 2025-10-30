@@ -3,6 +3,15 @@
 
   <app-nav-bar [active]="active" (changeTab)="setActive($event)"></app-nav-bar>
 
+  <!-- User Profile Section (Top Right) - only show when authenticated -->
+  <div class="user-section" *ngIf="isAuthenticated">
+    <div class="user-info">
+      <img [src]="user?.picture" [alt]="user?.name" class="user-avatar">
+      <span class="user-name">Welcome, {{ user?.name }}!</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
   <main>
     <ng-container [ngSwitch]="active">
       <section *ngSwitchCase="'Home'" class="hero">
@@ -13,7 +22,20 @@
             and build your confidence at the table.
           </p>
 
-          <button>Register</button>
+          <!-- Connect your existing Register button to Google Sign-In -->
+          <button *ngIf="!isAuthenticated" (click)="signInWithGoogle()">
+            Sign in with Google
+          </button>
+
+          <!-- Show Continue Playing when authenticated -->
+          <button *ngIf="isAuthenticated">
+            Continue Playing
+          </button>
+
+          <!-- Error message if login failed -->
+          <div class="error-message" *ngIf="loginError">
+            {{ loginError }}
+          </div>
         </div>
 
         <div class="hero-side">
