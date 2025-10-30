@@ -1,35 +1,45 @@
-<div class="analyzer-tab">
-  <header>
-    <h2>Hand Analysis</h2>
-    <p>
-      Set up a hand, send it to the backend, and review your equity before committing chips.
-    </p>
+<div class="analyzer-tab container-xl py-5">
+  <header class="row justify-content-start g-3">
+    <div class="col-lg-8">
+      <h2>Hand Analysis</h2>
+      <p>
+        Set up a hand, send it to the backend, and review your equity before committing chips.
+      </p>
+    </div>
   </header>
 
-  <section class="inputs">
-    <app-hand-input
-      [cardOptions]="handOptions"
-      [selectedCards]="holeCards"
-      (selectedCardsChange)="onHoleCardChange($event)"
-    ></app-hand-input>
-
-    <app-board-input
-      [cardOptions]="boardOptions"
-      [selectedCards]="boardCards"
-      (selectedCardsChange)="onBoardCardChange($event)"
-    ></app-board-input>
+  <section class="inputs rounded-4 p-4 mb-4">
+    <div class="row g-4">
+      <div class="col-12 col-lg-6">
+        <app-hand-input
+          [cardOptions]="handOptions"
+          [selectedCards]="holeCards"
+          (selectedCardsChange)="onHoleCardChange($event)"
+        ></app-hand-input>
+      </div>
+      <div class="col-12 col-lg-6">
+        <app-board-input
+          [cardOptions]="boardOptions"
+          [selectedCards]="boardCards"
+          (selectedCardsChange)="onBoardCardChange($event)"
+        ></app-board-input>
+      </div>
+    </div>
   </section>
 
-  <button
-    type="button"
-    class="calculate"
-    [disabled]="isCalculateDisabled"
-    (click)="calculateEquity()"
-  >
-    Calculate Equity
-  </button>
+  <div class="action-row d-flex flex-wrap gap-3">
+    <button
+      type="button"
+      class="calculate"
+      [disabled]="isCalculateDisabled"
+      (click)="calculateEquity()"
+    >
+      Calculate Equity
+    </button>
+  </div>
 
   <app-analysis-results
+    class="mt-4"
     [equity]="equity"
     [potOdds]="potOdds"
     [message]="resultMessage"
