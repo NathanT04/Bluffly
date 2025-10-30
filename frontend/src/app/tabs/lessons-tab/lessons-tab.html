@@ -143,6 +143,41 @@
           </ng-container>
         </section>
       </div>
+
+      <div class="col-12" *ngIf="resultSaveError">
+        <div class="lesson-feedback lesson-feedback--error">
+          {{ resultSaveError }}
+        </div>
+      </div>
+
+      <div class="col-12" *ngIf="recentResults.length > 0">
+        <section class="lesson-history">
+          <header class="lesson-history__header">
+            <h3>Recent Results</h3>
+            <span *ngIf="isSavingResult" class="lesson-history__status">Saving…</span>
+          </header>
+
+          <div class="row row-cols-1 row-cols-md-3 g-3">
+            <div class="col" *ngFor="let result of recentResults">
+              <div class="history-card">
+                <div class="history-card__meta">
+                  <span class="history-card__difficulty">{{ result.difficulty }}</span>
+                  <time class="history-card__time">
+                    {{ result.submittedAt | date : 'short' }}
+                  </time>
+                </div>
+                <div class="history-card__score">
+                  <strong>{{ result.correct }}</strong>
+                  <span>/ {{ result.total }}</span>
+                </div>
+                <div class="history-card__percentage">
+                  {{ result.percentage }}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   </ng-template>
 </div>
