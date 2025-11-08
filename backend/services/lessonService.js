@@ -1,7 +1,7 @@
 const LessonQuestion = require('../models/lessonQuestion');
 const { connectMongoose } = require('./mongoClient');
 
-const DIFFICULTY_LABEL_BY_SLUG = {
+const DIFFICULTY_LABEL_BY_KEY = {
   easy: 'Easy',
   medium: 'Medium',
   hard: 'Hard'
@@ -16,11 +16,11 @@ function sanitizeLimit(rawLimit, fallback) {
   return Math.min(Math.max(asNumber, 1), 50);
 }
 
-function normalizeDifficultySlug(slug) {
-  if (typeof slug !== 'string') {
+function normalizeDifficultyKey(key) {
+  if (typeof key !== 'string') {
     return '';
   }
-  return slug.trim().toLowerCase();
+  return key.trim().toLowerCase();
 }
 
 function toOptionArray(document) {
@@ -59,9 +59,9 @@ function toQuizQuestion(document) {
   };
 }
 
-exports.fetchRandomQuestionsByDifficulty = async (difficultySlug, rawLimit) => {
-  const slug = normalizeDifficultySlug(difficultySlug);
-  const difficultyLabel = DIFFICULTY_LABEL_BY_SLUG[slug];
+exports.fetchRandomQuestionsByDifficulty = async (difficultyKey, rawLimit) => {
+  const key = normalizeDifficultyKey(difficultyKey);
+  const difficultyLabel = DIFFICULTY_LABEL_BY_KEY[key];
 
   if (!difficultyLabel) {
     const error = new Error('Unsupported lesson difficulty.');
@@ -94,7 +94,7 @@ exports.fetchRandomQuestionsByDifficulty = async (difficultySlug, rawLimit) => {
   const documents = await LessonQuestion.aggregate(pipeline).exec();
 
   return {
-    slug,
+    difficultyKey: key,
     difficulty: difficultyLabel,
     limit,
     count: documents.length,

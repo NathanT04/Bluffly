@@ -11,13 +11,13 @@ function sanitizeLimit(rawLimit) {
   return Math.min(Math.max(parsed, 1), MAX_HISTORY_LIMIT);
 }
 
-exports.createResult = async ({ slug, difficulty, correct, total, percentage, metadata }) => {
+exports.createResult = async ({ difficulty, difficultyLabel, correct, total, percentage, metadata }) => {
   await connectMongoose();
 
-  const safeSlug = typeof slug === 'string' ? slug.trim().toLowerCase() : '';
-  const safeDifficulty = typeof difficulty === 'string' ? difficulty.trim() : '';
+  const safeDifficulty = typeof difficulty === 'string' ? difficulty.trim().toLowerCase() : '';
+  const safeLabel = typeof difficultyLabel === 'string' ? difficultyLabel.trim() : '';
 
-  if (!safeSlug || !safeDifficulty) {
+  if (!safeDifficulty || !safeLabel) {
     const error = new Error('A valid lesson difficulty is required.');
     error.statusCode = 400;
     throw error;
@@ -36,8 +36,8 @@ exports.createResult = async ({ slug, difficulty, correct, total, percentage, me
       : Math.round((safeCorrect / total) * 100);
 
   const doc = await QuizResult.create({
-    slug: safeSlug,
     difficulty: safeDifficulty,
+    difficultyLabel: safeLabel,
     correct: safeCorrect,
     total,
     percentage: safePercentage,
@@ -46,8 +46,8 @@ exports.createResult = async ({ slug, difficulty, correct, total, percentage, me
 
   return {
     id: doc.id,
-    slug: doc.slug,
     difficulty: doc.difficulty,
+    difficultyLabel: doc.difficultyLabel,
     correct: doc.correct,
     total: doc.total,
     percentage: doc.percentage,
@@ -55,12 +55,12 @@ exports.createResult = async ({ slug, difficulty, correct, total, percentage, me
   };
 };
 
-exports.listResults = async ({ slug, limit } = {}) => {
+exports.listResults = async ({ difficulty, limit } = {}) => {
   await connectMongoose();
 
   const query = {};
-  if (typeof slug === 'string' && slug.trim().length > 0) {
-    query.slug = slug.trim().toLowerCase();
+  if (typeof difficulty === 'string' && difficulty.trim().length > 0) {
+    query.difficulty = difficulty.trim().toLowerCase();
   }
 
   const docs = await QuizResult.find(query)
@@ -71,8 +71,8 @@ exports.listResults = async ({ slug, limit } = {}) => {
 
   return docs.map((doc) => ({
     id: doc._id?.toString() ?? undefined,
-    slug: doc.slug,
     difficulty: doc.difficulty,
+    difficultyLabel: doc.difficultyLabel,
     correct: doc.correct,
     total: doc.total,
     percentage: doc.percentage,

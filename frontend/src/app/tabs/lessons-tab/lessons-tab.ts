@@ -220,8 +220,8 @@ export class LessonsTab {
     try {
       await firstValueFrom(
         this.lessonService.submitQuizResult({
-          slug: this.selectedLessonSlug,
-          difficulty: this.selectedLesson.difficulty,
+          difficulty: this.selectedLessonSlug,
+          difficultyLabel: this.selectedLesson.difficulty,
           correct: this.quizSummary.correct,
           total: this.quizSummary.total,
           percentage: this.quizSummary.percentage,
