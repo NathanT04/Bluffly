@@ -4,12 +4,14 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## 1. Install Dependencies
 **Backend**
-```cd backend
+```
+cd backend
 npm install
 ```
 
 **Frontend**
-```cd frontend
+```
+cd frontend
 npm install
 ```
 
