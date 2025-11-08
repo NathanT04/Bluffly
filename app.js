@@ -24,8 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
-const authRoutes = require('./routes/auth');
-const pageRoutes = require('./routes/pages');
+const authRoutes = require('./backend/routes/auth.js');
+const pageRoutes = require('./backend/routes/pages.js');
 
 app.use('/auth', authRoutes);
 app.use('/api', pageRoutes);
