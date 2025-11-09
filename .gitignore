@@ -5,7 +5,6 @@
 /frontend/bazel-out
 /frontend/.angular/cache
 /frontend/node_modules
-/frontend/.env
 
 # === BACKEND (Express) ===
 /backend/node_modules
