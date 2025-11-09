@@ -13,7 +13,7 @@ export interface LessonQuizQuestion {
 }
 
 export interface LessonQuizResponse {
-  slug: LessonDifficultySlug;
+  difficultyKey: LessonDifficultySlug;
   difficulty: string;
   limit: number;
   count: number;
@@ -22,8 +22,8 @@ export interface LessonQuizResponse {
 
 export interface LessonQuizResult {
   id?: string;
-  slug: LessonDifficultySlug;
-  difficulty: string;
+  difficulty: LessonDifficultySlug;
+  difficultyLabel: string;
   correct: number;
   total: number;
   percentage: number;
@@ -36,8 +36,8 @@ export interface LessonQuizResultListResponse {
 }
 
 export interface LessonQuizResultPayload {
-  slug: LessonDifficultySlug;
-  difficulty: string;
+  difficulty: LessonDifficultySlug;
+  difficultyLabel: string;
   correct: number;
   total: number;
   percentage: number;
@@ -60,10 +60,10 @@ export class LessonService {
     return this.http.post<LessonQuizResult>('/api/lessons/results', payload);
   }
 
-  getRecentResults(slug?: LessonDifficultySlug, limit = 10): Observable<LessonQuizResultListResponse> {
+  getRecentResults(difficulty?: LessonDifficultySlug, limit = 10): Observable<LessonQuizResultListResponse> {
     let params = new HttpParams().set('limit', limit.toString());
-    if (slug) {
-      params = params.set('slug', slug);
+    if (difficulty) {
+      params = params.set('difficulty', difficulty);
     }
     return this.http.get<LessonQuizResultListResponse>('/api/lessons/results', { params });
   }

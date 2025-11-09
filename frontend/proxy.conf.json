@@ -5,10 +5,8 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
-  "/api/*": {
+  "/api": {
     "target": "http://localhost:3000",
-    "secure": false,
-    "changeOrigin": true,
-    "logLevel": "debug"
+    "secure": false
   }
 }
