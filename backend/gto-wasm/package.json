@@ -1,0 +1,20 @@
+{
+  "name": "postflop-solver",
+  "collaborators": [
+    "Wataru Inariba"
+  ],
+  "description": "An open-source postflop solver for Texas hold'em poker",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/b-inary/postflop-solver"
+  },
+  "files": [
+    "postflop_solver_bg.wasm",
+    "postflop_solver.js",
+    "postflop_solver.d.ts"
+  ],
+  "main": "postflop_solver.js",
+  "types": "postflop_solver.d.ts"
+}

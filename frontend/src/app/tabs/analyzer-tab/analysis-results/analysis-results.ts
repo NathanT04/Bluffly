@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 export class AnalysisResults {
   @Input() equity: string | null = null;
   @Input() potOdds: string | null = null;
+  @Input() gtoAction: string | null = null;
   @Input() message = '';
   @Input() hasSubmission = false;
 }
-
