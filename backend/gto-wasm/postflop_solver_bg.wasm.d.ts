@@ -1,0 +1,36 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export const __wbg_wasmpostflopsolver_free: (a: number, b: number) => void;
+export const solverVersion: () => [number, number];
+export const wasmpostflopsolver_allocateMemory: (a: number, b: number) => void;
+export const wasmpostflopsolver_availableActions: (a: number) => [number, number, number];
+export const wasmpostflopsolver_backToRoot: (a: number) => void;
+export const wasmpostflopsolver_cacheNormalizedWeights: (a: number) => void;
+export const wasmpostflopsolver_computeExploitability: (a: number) => number;
+export const wasmpostflopsolver_currentBoard: (a: number) => [number, number, number, number];
+export const wasmpostflopsolver_currentPlayer: (a: number) => number;
+export const wasmpostflopsolver_equity: (a: number, b: number) => [number, number, number, number];
+export const wasmpostflopsolver_expectedValues: (a: number, b: number) => [number, number, number, number];
+export const wasmpostflopsolver_isChanceNode: (a: number) => number;
+export const wasmpostflopsolver_isTerminalNode: (a: number) => number;
+export const wasmpostflopsolver_memoryUsage: (a: number) => [number, number];
+export const wasmpostflopsolver_new: (a: any) => [number, number, number];
+export const wasmpostflopsolver_normalizedWeights: (a: number, b: number) => [number, number, number, number];
+export const wasmpostflopsolver_numPrivateHands: (a: number, b: number) => [number, number, number];
+export const wasmpostflopsolver_playAction: (a: number, b: number) => [number, number];
+export const wasmpostflopsolver_playChanceCard: (a: number, b: number, c: number) => [number, number];
+export const wasmpostflopsolver_possibleCards: (a: number) => [number, number, number, number];
+export const wasmpostflopsolver_privateHands: (a: number, b: number) => [number, number, number, number];
+export const wasmpostflopsolver_solve: (a: number, b: number, c: number) => [number, number, number];
+export const wasmpostflopsolver_strategy: (a: number) => [number, number, number, number];
+export const wasmpostflopsolver_updateConfig: (a: number, b: any) => [number, number];
+export const __wbindgen_malloc: (a: number, b: number) => number;
+export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_exn_store: (a: number) => void;
+export const __externref_table_alloc: () => number;
+export const __wbindgen_externrefs: WebAssembly.Table;
+export const __wbindgen_free: (a: number, b: number, c: number) => void;
+export const __externref_table_dealloc: (a: number) => void;
+export const __externref_drop_slice: (a: number, b: number) => void;
+export const __wbindgen_start: () => void;

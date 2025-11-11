@@ -1,4 +1,5 @@
 const equityService = require('../services/equityService');
+const { getGtoRecommendation } = require('../services/gtoSolverService');
 
 const CARD_PATTERN = /^(A|K|Q|J|T|9|8|7|6|5|4|3|2)(s|h|d|c)$/i;
 const MAX_BOARD_CARDS = 5;
@@ -82,7 +83,11 @@ exports.analyzeEquity = (req, res, next) => {
       : undefined;
 
     const result = equityService.calculateHeroEquity(hero, board, iterations);
-    return res.json(result);
+    const gto = getGtoRecommendation(hero, board);
+    return res.json({
+      ...result,
+      gto
+    });
   } catch (error) {
     return next(error);
   }

@@ -27,6 +27,7 @@ export class AnalyzerTab implements OnInit {
 
   equity: string | null = null;
   potOdds: string | null = null;
+  gtoAction: string | null = null;
   resultMessage = '';
   hasSubmission = false;
   isCalculating = false;
@@ -69,6 +70,7 @@ export class AnalyzerTab implements OnInit {
     this.equity = null;
     this.potOdds = null;
     this.resultMessage = 'Running equity simulation against a random opponent range...';
+    this.gtoAction = null;
     this.isCalculating = true;
 
     const heroHand = [...this.holeCards] as [string, string];
@@ -85,12 +87,16 @@ export class AnalyzerTab implements OnInit {
           const equityPercentage = response?.equity?.percentage ?? 0;
           this.equity = `${equityPercentage.toFixed(1)}%`;
           this.potOdds = this.formatPotOddsRatio(equityPercentage);
-          this.resultMessage =
+          const gtoSummary = this.describeGto(response?.gto);
+          this.gtoAction = gtoSummary.primaryAction;
+          const potMessage =
             'Pot odds show the minimum pot-to-call ratio to break even with your current equity.';
+          this.resultMessage = gtoSummary.note ? `${potMessage} ${gtoSummary.note}` : potMessage;
           this.isCalculating = false;
         },
         error: error => {
           console.error('Failed to calculate poker equity', error);
+          this.gtoAction = null;
           const backendMessage = (error?.error && typeof error.error === 'object' && 'error' in error.error)
             ? String(error.error.error)
             : null;
@@ -100,6 +106,37 @@ export class AnalyzerTab implements OnInit {
           this.isCalculating = false;
         }
       });
+  }
+
+  private describeGto(
+    gto?: GtoResponse | null
+  ): { primaryAction: string | null; actions: string[]; note: string | null } {
+    if (!gto) {
+      return { primaryAction: null, actions: [], note: null };
+    }
+
+    if (gto.status === 'ok' && gto.topActions?.length) {
+      const actions = gto.topActions.map(action => this.formatGtoAction(action));
+      const [primaryAction] = actions;
+      const note = gto.recommendation?.label
+        ? `GTO prefers ${this.formatGtoAction(gto.recommendation)} in this spot.`
+        : null;
+      return { primaryAction: primaryAction ?? null, actions, note };
+    }
+
+    const fallback =
+      gto.message ||
+      (gto.status === 'unavailable'
+        ? 'Add at least three community cards to unlock a GTO suggestion.'
+        : 'GTO guidance is unavailable right now.');
+
+    return { primaryAction: null, actions: [], note: fallback };
+  }
+
+  private formatGtoAction(action: { label: string; probability?: number | null }): string {
+    const percent =
+      typeof action.probability === 'number' ? `${(action.probability * 100).toFixed(0)}%` : null;
+    return percent ? `${action.label} (${percent})` : action.label;
   }
 
   private isCardSelectedElsewhere(card: string, index: number, stack: string[]): boolean {
@@ -149,4 +186,18 @@ type AnalyzerResponse = {
   };
   board: string[];
   iterations: number;
+  gto?: GtoResponse;
+};
+
+type GtoResponse = {
+  status: 'ok' | 'unavailable' | 'error';
+  message?: string;
+  recommendation?: {
+    label: string;
+    probability?: number | null;
+  } | null;
+  topActions?: Array<{
+    label: string;
+    probability?: number | null;
+  }>;
 };

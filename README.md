@@ -29,3 +29,10 @@ npm start
 cd frontend
 ng serve --proxy-config proxy.conf.json
 ```
+
+## Acknowledgements
+This project integrates the [postflop-solver](https://github.com/b-inary/postflop-solver)
+engine by **Wataru Inariba**, licensed under the **GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)**.
+
+The solver is compiled to WebAssembly and included as a dependency in the backend for running GTO calculations
+All original solver rights belong to the respective author(s).
