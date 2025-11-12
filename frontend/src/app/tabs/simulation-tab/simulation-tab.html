@@ -1,58 +1,201 @@
-<div class="tab container-xl py-5">
-  <div class="row g-4 mb-3 align-items-center">
-    <div class="col-lg-6">
+<div class="tab container-xl py-5 simulation-tab">
+  <div class="row g-4 mb-4 align-items-center header-row">
+    <div class="col-lg-7">
       <h2>Poker Simulation</h2>
-      <p class="mb-0">
-        Run a full hand against a simulated opponent and watch the streets unfold.
-      </p>
     </div>
-    <div class="col-lg-6">
-      <div class="controls d-flex flex-wrap gap-2 justify-content-lg-end">
-        <button class="btn btn-outline-light" (click)="newGame()" [disabled]="busy">New Game</button>
-        <button
-          class="btn btn-outline-light"
-          (click)="nextStreet()"
-          [disabled]="busy || !snapshot || snapshot.phase === 'showdown'"
-        >
-          Next Street
-        </button>
+    <div class="col-lg-5">
+      <div class="controls d-flex flex-wrap gap-2 justify-content-lg-end header-controls">
+        <button class="btn" (click)="newGame()" [disabled]="busy">New Game</button>
       </div>
     </div>
   </div>
 
-  <div class="table">
-    <div class="felt">
-      <ng-container *ngIf="snapshot as s; else empty">
-        <div class="board-area">
-          <div class="board-cards">
-            <app-playing-card *ngFor="let c of s.board" [card]="c"></app-playing-card>
-            <app-playing-card *ngFor="let _ of [].constructor(5 - s.board.length)" [card]="null"></app-playing-card>
-          </div>
-          <div class="pot">Pot: {{ s.pot }}</div>
+  <div class="play-layout" *ngIf="snapshot as s; else emptyState">
+    <div class="table-shell">
+      <div class="phase-track">
+        <div class="phase-chip" *ngFor="let phase of phaseFlow; let idx = index"
+             [class.done]="phaseFlow.indexOf(s.phase) > idx" [class.active]="phase === s.phase">
+          <span class="step-index">{{ idx + 1 }}</span>
+          <span class="step-label">{{ phase | titlecase }}</span>
         </div>
+      </div>
 
-        <div class="seats">
-          <div class="seat top" *ngIf="s.players[1] as villain">
-            <div class="name">{{ villain.name }} • {{ villain.stack }}</div>
+      <div class="table-rail">
+        <div class="seat bot" *ngIf="bot as b">
+          <div class="seat-header">
+            <span class="badge">Bot</span>
+            <div class="name">{{ b.name }}</div>
+            <div class="stack">{{ b.stack }} chips</div>
+          </div>
+          <div class="seat-body" [class.turn]="s.toAct === 1 && s.phase !== 'showdown'">
             <div class="hand">
-              <app-playing-card *ngFor="let c of villain.hand" [card]="c"></app-playing-card>
+              <app-playing-card *ngFor="let c of b.hand" [card]="s.phase === 'showdown' ? c : null"></app-playing-card>
+            </div>
+            <div class="status" *ngIf="b.folded">Folded</div>
+            <div class="status" *ngIf="!b.folded && s.phase !== 'showdown' && s.toAct === 1">Thinking…</div>
+            <div class="status" *ngIf="s.phase === 'showdown' && s.result">
+              {{ s.result.winner === b.id ? 'Winner' : (s.result.winner === 'split' ? 'Split Pot' : 'Runner-up') }}
             </div>
           </div>
+        </div>
 
-          <div class="seat bottom" *ngIf="s.players[0] as hero">
-            <div class="name">{{ hero.name }} • {{ hero.stack }}</div>
-            <div class="hand">
-              <app-playing-card *ngFor="let c of hero.hand" [card]="c"></app-playing-card>
+        <div class="table-center">
+          <div class="board-stack">
+            <div class="info-row">
+              <div class="pot-chip">
+                <span>Pot</span>
+                <strong>{{ s.pot }}</strong>
+              </div>
+              <div class="bet-chip" *ngIf="s.callAmount > 0">To Call {{ s.callAmount }}</div>
+            </div>
+            <div class="board-row">
+              <div class="board-cards">
+                <app-playing-card *ngFor="let c of s.board" [card]="c"></app-playing-card>
+                <app-playing-card *ngFor="let _ of [].constructor(5 - s.board.length)" [card]="null"></app-playing-card>
+              </div>
+            </div>
+            <div class="table-footer">
+              <div class="last-action" *ngIf="s.lastAction; else phaseState">
+                {{ s.lastAction }}
+              </div>
+              <ng-template #phaseState>
+                <div class="last-action">{{ s.phase | titlecase }} in progress</div>
+              </ng-template>
             </div>
           </div>
         </div>
 
-        <div class="phase-label">{{ s.phase | titlecase }}</div>
-      </ng-container>
-      <ng-template #empty>
-        <div class="empty">Click "New Game" to deal hole cards.</div>
-      </ng-template>
+        <div class="seat player" *ngIf="player as p">
+          <div class="seat-header">
+            <span class="badge hero">Player</span>
+            <div class="name">{{ p.name }}</div>
+            <div class="stack">{{ p.stack }} chips</div>
+          </div>
+          <div class="seat-body" [class.turn]="canAct">
+            <div class="hand">
+              <app-playing-card *ngFor="let c of p.hand" [card]="c"></app-playing-card>
+            </div>
+            <div class="status" *ngIf="canAct">Your move</div>
+            <div class="status" *ngIf="!canAct && s.phase !== 'showdown'">Waiting for bot…</div>
+            <div class="status" *ngIf="s.phase === 'showdown' && s.result">
+              {{ s.result.winner === 'split' ? 'Split Pot' : (s.result.winner === p.id ? 'Winner' : 'Runner-up') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log moved outside the table, fixed right column -->
+    <div class="action-log" *ngIf="actionLog.length">
+      <div class="log-header">Hand Log</div>
+      <ul>
+        <li *ngFor="let entry of actionLog; trackBy: trackLogEntry">
+          <span class="time">{{ entry.timestamp | date:'shortTime' }}</span>
+          <span class="text">{{ entry.text }}</span>
+        </li>
+      </ul>
     </div>
   </div>
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <h4>Ready to play?</h4>
+      <p>Tap <strong>New Game</strong> to deal cards and follow the hand street by street.</p>
+    </div>
+  </ng-template>
+
+  <ng-container *ngIf="snapshot as s">
+    <div class="action-hud">
+      <div class="hud-card">
+        <div class="hand-summary">
+          <div>
+            <span class="label">Phase</span>
+            <strong>{{ s.phase | titlecase }}</strong>
+          </div>
+          <div>
+            <span class="label">Pot</span>
+            <strong>{{ s.pot }}</strong>
+          </div>
+          <div>
+            <span class="label">Call</span>
+            <strong>{{ s.callAmount || 0 }}</strong>
+          </div>
+          <div>
+            <span class="label">Min Raise</span>
+            <strong>{{ s.minRaiseTo }}</strong>
+          </div>
+        </div>
+
+        <div class="action-panel" *ngIf="s.phase !== 'showdown'; else showdownSummary">
+          <ng-container *ngIf="canAct; else waitingAction">
+            <!-- Primary compact action buttons -->
+            <ng-container *ngIf="!showRaise; else raiseView">
+              <div class="buttons compact">
+                <button class="action-btn fold" (click)="fold()"
+                        [disabled]="busy || !s.availableActions.includes('fold')">Fold</button>
+                <button class="action-btn call" (click)="checkOrCall()"
+                        [disabled]="busy || !(s.availableActions.includes('check') || s.availableActions.includes('call'))">
+                  {{ callLabel }}
+                </button>
+                <button class="action-btn raise" (click)="enterRaise()"
+                        [disabled]="busy || !s.availableActions.includes('raise')">{{ raiseLabel }}</button>
+              </div>
+            </ng-container>
+
+            <!-- Raise/Bet panel (only shown after clicking Raise) -->
+            <ng-template #raiseView>
+              <div class="raise-panel">
+                <div class="panel-header">
+                  <span>{{ raisePanelTitle }}</span>
+                  <small>Min {{ s.minRaiseTo }} • Max {{ playerMaxRaise }}</small>
+                </div>
+                <div class="slider-row">
+                  <input type="range" class="form-range"
+                         [min]="s.minRaiseTo"
+                         [max]="playerMaxRaise"
+                         [ngModel]="raiseTo"
+                         (ngModelChange)="onRaiseChange($event)"
+                         step="1" />
+                  <input type="number" class="form-control"
+                         [ngModel]="raiseTo"
+                         (ngModelChange)="onRaiseChange($event)"
+                         [min]="s.minRaiseTo"
+                         [max]="playerMaxRaise" />
+                  <button class="action-btn raise" (click)="raise()" [disabled]="busy">{{ raiseLabel }} {{ raiseTo }}</button>
+                </div>
+                <div class="quick-buttons">
+                  <span class="label">Quick set:</span>
+                  <button type="button" (click)="setQuickRaise('min')">Min</button>
+                  <button type="button" (click)="setQuickRaise('pot')">Pot</button>
+                  <button type="button" (click)="setQuickRaise('all-in')">All-in</button>
+                  <button type="button" class="back-btn" (click)="cancelRaise()">Back</button>
+                </div>
+              </div>
+            </ng-template>
+          </ng-container>
+          <ng-template #waitingAction>
+            <div class="waiting">
+              Bot is making a decision…
+            </div>
+          </ng-template>
+        </div>
+
+        <ng-template #showdownSummary>
+          <div class="showdown" *ngIf="s.result as r">
+            <div class="headline">
+          <ng-container [ngSwitch]="r.winner === 'split' ? 'split' : (r.winner === player?.id ? 'player' : 'bot')">
+            <span *ngSwitchCase="'player'">You win {{ r.payouts[player?.id || ''] }} chips</span>
+            <span *ngSwitchCase="'bot'">Bot wins {{ r.payouts[bot?.id || ''] }} chips</span>
+            <span *ngSwitchCase="'split'">Split pot — {{ r.payouts[player?.id || ''] }} chips each</span>
+          </ng-container>
+        </div>
+        <div class="details">
+          <div>Your hand: <strong>{{ r.hero.handName || '—' }}</strong></div>
+          <div>Bot: <strong>{{ r.villain.handName || '—' }}</strong></div>
+        </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </ng-container>
 
 </div>

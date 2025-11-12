@@ -15,8 +15,7 @@ export class SimulationService {
     return this.http.get<GameSnapshot>(`/api/table/${id}`);
   }
 
-  next(id: string): Observable<GameSnapshot> {
-    return this.http.post<GameSnapshot>(`/api/table/${id}/next`, {});
+  act(id: string, action: 'fold'|'check'|'call'|'raise', amount?: number): Observable<GameSnapshot> {
+    return this.http.post<GameSnapshot>(`/api/table/${id}/action`, { action, amount });
   }
 }
-

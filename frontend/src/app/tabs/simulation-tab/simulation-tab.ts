@@ -1,20 +1,33 @@
 import { Component } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { SimulationService } from '../../services/simulation.service';
-import { GameSnapshot } from '../../shared/models/poker';
+import { GameSnapshot, Phase, PlayerSeat } from '../../shared/models/poker';
 import { PlayingCard } from '../../ui/playing-card/playing-card';
+
+interface ActionLogEntry {
+  text: string;
+  timestamp: number;
+}
 
 @Component({
   selector: 'app-simulation-tab',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, TitleCasePipe, PlayingCard],
+  imports: [CommonModule, HttpClientModule, FormsModule, TitleCasePipe, PlayingCard],
   templateUrl: './simulation-tab.html',
   styleUrls: ['./simulation-tab.scss']
 })
 export class SimulationTab {
   snapshot: GameSnapshot | null = null;
   busy = false;
+  raiseTo = 4;
+  readonly phaseFlow: Phase[] = ['preflop', 'flop', 'turn', 'river', 'showdown'];
+  actionLog: ActionLogEntry[] = [];
+  showRaise = false;
+
+  private lastActionSeen: string | null = null;
+  private lastPhaseSeen: Phase | null = null;
 
   constructor(private readonly sim: SimulationService) {}
 
@@ -23,7 +36,7 @@ export class SimulationTab {
     this.busy = true;
     this.sim.createTable(2, 100).subscribe({
       next: snap => {
-        this.snapshot = snap;
+        this.processSnapshot(snap, true);
         this.busy = false;
       },
       error: err => {
@@ -33,18 +46,161 @@ export class SimulationTab {
     });
   }
 
-  nextStreet() {
+  get canAct(): boolean {
+    return !!this.snapshot && this.snapshot.phase !== 'showdown' && this.snapshot.toAct === 0;
+  }
+
+  get player(): PlayerSeat | null {
+    return this.snapshot?.players?.[0] ?? null;
+  }
+
+  get bot(): PlayerSeat | null {
+    return this.snapshot?.players?.[1] ?? null;
+  }
+
+  get callLabel(): string {
+    if (!this.snapshot) {
+      return 'Check';
+    }
+    const amount = this.snapshot.callAmount ?? 0;
+    return amount > 0 ? `Call ${amount}` : 'Check';
+  }
+
+  get raiseLabel(): string {
+    const s = this.snapshot;
+    if (!s || !s.availableActions?.includes('raise')) return 'Raise';
+    if ((s.callAmount ?? 0) === 0) return 'Bet';
+    return s.lastAction?.toLowerCase().includes('raise') ? 'Re-raise' : 'Raise';
+  }
+
+  get raisePanelTitle(): string {
+    const s = this.snapshot;
+    if (!s || !s.availableActions?.includes('raise')) return 'Raise to';
+    return (s.callAmount ?? 0) === 0 ? 'Bet amount' : 'Raise to';
+  }
+
+  get playerMaxRaise(): number {
+    const player = this.player;
+    if (!player) return this.snapshot?.minRaiseTo ?? 0;
+    return Math.max((player.stack ?? 0) + (player.bet ?? 0), this.snapshot?.minRaiseTo ?? 0);
+  }
+
+  onRaiseChange(value: string | number) {
+    const numeric = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(numeric) || !this.snapshot) {
+      return;
+    }
+    this.raiseTo = this.clampRaise(Math.floor(numeric));
+  }
+
+  setQuickRaise(target: 'min' | 'pot' | 'all-in') {
+    if (!this.snapshot) return;
+    const min = this.snapshot.minRaiseTo ?? this.raiseTo;
+    const playerCeiling = this.playerMaxRaise;
+    let amount = min;
+
+    if (target === 'pot') {
+      const potBased = this.snapshot.pot + (this.snapshot.callAmount ?? 0);
+      amount = Math.max(min, Math.min(potBased, playerCeiling));
+    } else if (target === 'all-in') {
+      amount = playerCeiling;
+    }
+
+    this.raiseTo = this.clampRaise(amount);
+  }
+
+  private clampRaise(amount: number): number {
+    const min = this.snapshot?.minRaiseTo ?? 0;
+    const max = this.playerMaxRaise;
+    if (!Number.isFinite(amount)) return min;
+    return Math.min(Math.max(amount, min), max);
+  }
+
+  trackLogEntry(_index: number, entry: ActionLogEntry) {
+    return entry.timestamp;
+  }
+
+  private doAct(action: 'fold'|'check'|'call'|'raise', amount?: number) {
     if (!this.snapshot || this.busy) return;
     this.busy = true;
-    this.sim.next(this.snapshot.id).subscribe({
+    this.sim.act(this.snapshot.id, action, amount).subscribe({
       next: snap => {
-        this.snapshot = snap;
+        this.processSnapshot(snap);
         this.busy = false;
       },
       error: err => {
-        console.error('Failed to progress street', err);
+        console.error('Failed to act', err);
         this.busy = false;
       }
     });
+  }
+
+  fold() { this.doAct('fold'); }
+  checkOrCall() {
+    if (!this.snapshot) return;
+    const wantsCall = (this.snapshot.callAmount ?? 0) > 0;
+    this.doAct(wantsCall ? 'call' : 'check');
+  }
+  raise() { this.doAct('raise', this.raiseTo); }
+
+  enterRaise() {
+    if (!this.snapshot || !this.snapshot.availableActions?.includes('raise')) return;
+    this.showRaise = true;
+  }
+
+  cancelRaise() {
+    this.showRaise = false;
+  }
+
+  private processSnapshot(snap: GameSnapshot, resetLog = false) {
+    this.snapshot = snap;
+    this.raiseTo = snap.minRaiseTo ?? this.raiseTo;
+    this.updateActionLog(snap, resetLog);
+    // whenever we receive a fresh snapshot, collapse the raise panel
+    this.showRaise = false;
+  }
+
+  private updateActionLog(snap: GameSnapshot, resetLog = false) {
+    if (resetLog) {
+      this.actionLog = [];
+      this.lastActionSeen = null;
+      this.lastPhaseSeen = null;
+      this.pushLogEntry('New hand started');
+    }
+
+    if (this.lastPhaseSeen !== snap.phase) {
+      this.lastPhaseSeen = snap.phase;
+      this.pushLogEntry(`${this.formatPhaseLabel(snap.phase)} phase`);
+    }
+
+    if (snap.lastAction && snap.lastAction !== this.lastActionSeen) {
+      this.lastActionSeen = snap.lastAction;
+      this.pushLogEntry(snap.lastAction);
+    }
+
+    if (snap.phase === 'showdown' && snap.result) {
+      const playerId = snap.players[0]?.id;
+      const botId = snap.players[1]?.id;
+      let summary = 'Hand complete';
+
+      if (snap.result.winner === 'split') {
+        summary = 'Pot split';
+      } else if (snap.result.winner === playerId) {
+        summary = 'Player wins the pot';
+      } else if (snap.result.winner === botId) {
+        summary = 'Bot wins the pot';
+      }
+
+      this.pushLogEntry(summary);
+    }
+  }
+
+  private pushLogEntry(text: string) {
+    const entry: ActionLogEntry = { text, timestamp: Date.now() };
+    this.actionLog = [entry, ...this.actionLog].slice(0, 12);
+  }
+
+  private formatPhaseLabel(phase: Phase) {
+    return phase.charAt(0).toUpperCase() + phase.slice(1);
   }
 }
