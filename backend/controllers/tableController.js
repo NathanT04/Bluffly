@@ -1,4 +1,4 @@
-const { createGame, nextStreet, toSnapshot } = require('../engine/gameEngine');
+const { createGame, toSnapshot, applyAction, runVillainAuto } = require('../engine/gameEngine');
 const { saveTable, getTable } = require('../engine/store');
 
 exports.createTable = (req, res, next) => {
@@ -28,19 +28,34 @@ exports.getTable = (req, res, next) => {
   }
 };
 
-exports.next = (req, res, next) => {
+exports.act = (req, res, next) => {
   try {
     const table = getTable(req.params.id);
     if (!table) {
       return res.status(404).json({ error: 'Table not found' });
     }
-    if (table.phase === 'showdown') {
-      return res.json(toSnapshot(table));
+
+    const action = String(req.body?.action || '').toLowerCase();
+    const amount = req.body?.amount;
+    const allowed = ['fold', 'check', 'call', 'raise'];
+    if (!allowed.includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
     }
-    nextStreet(table);
+
+    // Hero is index 0
+    applyAction(table, 0, action, amount);
+
+    // Let the villain play automatically until it's hero's turn again or hand ends
+    if (table.phase !== 'showdown') {
+      runVillainAuto(table);
+    }
+
+    // Edge case: if no one can act (both all-in/folded), the engine will
+    // auto-advance streets to showdown before returning the snapshot.
+    // (Handled inside engine via autoAdvanceIfLocked invoked from applyAction.)
+
     return res.json(toSnapshot(table));
   } catch (err) {
     return next(err);
   }
 };
-
