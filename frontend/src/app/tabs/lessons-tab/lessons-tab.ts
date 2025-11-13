@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -22,7 +22,7 @@ type LessonSummary = {
   templateUrl: './lessons-tab.html',
   styleUrls: ['./lessons-tab.scss']
 })
-export class LessonsTab {
+export class LessonsTab implements OnInit {
   @ViewChild('quizTop') private quizTopRef?: ElementRef<HTMLDivElement>;
   private readonly lessonService = inject(LessonService);
 
@@ -62,8 +62,16 @@ export class LessonsTab {
     }
   ];
 
+  allQuizResults: LessonQuizResult[] = [];
+  isAllResultsLoading = false;
+  allResultsError: string | null = null;
+
   get selectedLesson(): LessonSummary | null {
     return this.lessons.find((lesson) => lesson.difficulty === this.selectedLessonDifficulty) ?? null;
+  }
+
+  ngOnInit(): void {
+    void this.loadAllQuizResults();
   }
 
   startLesson(difficulty: LessonDifficulty) {
@@ -224,6 +232,7 @@ export class LessonsTab {
         })
       );
       await this.loadRecentResults(this.selectedLessonDifficulty);
+      await this.loadAllQuizResults();
     } catch (error) {
       console.error('Failed to save quiz result', error);
       this.resultSaveError = 'Unable to save your quiz result right now.';
@@ -239,6 +248,22 @@ export class LessonsTab {
     } catch (error) {
       console.error('Failed to load quiz history', error);
       this.recentResults = [];
+    }
+  }
+
+  async loadAllQuizResults() {
+    this.isAllResultsLoading = true;
+    this.allResultsError = null;
+
+    try {
+      const response = await firstValueFrom(this.lessonService.getRecentResults(undefined, 9));
+      this.allQuizResults = response.results;
+    } catch (error) {
+      console.error('Failed to load overall quiz results', error);
+      this.allQuizResults = [];
+      this.allResultsError = 'Unable to load quiz results right now.';
+    } finally {
+      this.isAllResultsLoading = false;
     }
   }
 }
