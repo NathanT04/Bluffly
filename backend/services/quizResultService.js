@@ -11,8 +11,14 @@ function sanitizeLimit(rawLimit) {
   return Math.min(Math.max(parsed, 1), MAX_HISTORY_LIMIT);
 }
 
-exports.createResult = async ({ difficulty, difficultyLabel, correct, total, percentage, metadata }) => {
+exports.createResult = async ({ userId, difficulty, difficultyLabel, correct, total, percentage, metadata }) => {
   await connectMongoose();
+
+  if (!userId) {
+    const error = new Error('An authenticated user is required.');
+    error.statusCode = 401;
+    throw error;
+  }
 
   const safeDifficulty = typeof difficulty === 'string' ? difficulty.trim().toLowerCase() : '';
   const safeLabel = typeof difficultyLabel === 'string' ? difficultyLabel.trim() : '';
@@ -36,6 +42,7 @@ exports.createResult = async ({ difficulty, difficultyLabel, correct, total, per
       : Math.round((safeCorrect / total) * 100);
 
   const doc = await QuizResult.create({
+    user: userId,
     difficulty: safeDifficulty,
     difficultyLabel: safeLabel,
     correct: safeCorrect,
@@ -55,10 +62,16 @@ exports.createResult = async ({ difficulty, difficultyLabel, correct, total, per
   };
 };
 
-exports.listResults = async ({ difficulty, limit } = {}) => {
+exports.listResults = async ({ userId, difficulty, limit } = {}) => {
   await connectMongoose();
 
-  const query = {};
+  if (!userId) {
+    const error = new Error('An authenticated user is required.');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const query = { user: userId };
   if (typeof difficulty === 'string' && difficulty.trim().length > 0) {
     query.difficulty = difficulty.trim().toLowerCase();
   }

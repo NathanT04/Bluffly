@@ -13,17 +13,17 @@
       <div
         class="col"
         *ngFor="let lesson of lessons"
-        [attr.data-difficulty]="lesson.slug"
+        [attr.data-difficulty]="lesson.difficulty"
       >
         <article class="lesson-card h-100">
           <header class="lesson-card__header">
-            <span class="lesson-card__difficulty">{{ lesson.difficulty }}</span>
+            <span class="lesson-card__difficulty">{{ lesson.difficultyLabel }}</span>
             <h3 class="lesson-card__title">{{ lesson.title }}</h3>
           </header>
           <p class="lesson-card__description">
             {{ lesson.description }}
           </p>
-          <button type="button" class="lesson-card__cta" (click)="startLesson(lesson.slug)">
+          <button type="button" class="lesson-card__cta" (click)="startLesson(lesson.difficulty)">
             {{ lesson.cta }}
           </button>
         </article>
@@ -39,7 +39,7 @@
 
       <div class="col-12">
         <header class="lesson-detail__header">
-          <span class="lesson-detail__difficulty">{{ selectedLesson?.difficulty }} Mode</span>
+          <span class="lesson-detail__difficulty">{{ selectedLesson?.difficultyLabel }} Mode</span>
           <h2 class="lesson-detail__title">{{ selectedLesson?.title }}</h2>
           <p class="lesson-detail__description">
             {{ selectedLesson?.description }}

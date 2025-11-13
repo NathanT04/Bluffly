@@ -2,7 +2,13 @@ const quizResultService = require('../services/quizResultService');
 
 exports.createResult = async (req, res, next) => {
   try {
+    const userId = req.session?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required.' });
+    }
+
     const payload = {
+      userId,
       difficulty: req.body?.difficulty,
       difficultyLabel: req.body?.difficultyLabel,
       correct: req.body?.correct,
@@ -20,7 +26,13 @@ exports.createResult = async (req, res, next) => {
 
 exports.listResults = async (req, res, next) => {
   try {
+    const userId = req.session?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required.' });
+    }
+
     const results = await quizResultService.listResults({
+      userId,
       difficulty: req.query?.difficulty,
       limit: req.query?.limit
     });
