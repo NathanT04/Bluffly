@@ -11,8 +11,8 @@ import {
 type LessonDifficulty = LessonDifficultySlug;
 
 type LessonSummary = {
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  slug: LessonDifficulty;
+  difficultyLabel: 'Easy' | 'Medium' | 'Hard';
+  difficulty: LessonDifficulty;
   title: string;
   description: string;
   cta: string;
@@ -29,7 +29,7 @@ export class LessonsTab {
   @ViewChild('quizTop') private quizTopRef?: ElementRef<HTMLDivElement>;
   private readonly lessonService = inject(LessonService);
 
-  selectedLessonSlug: LessonDifficulty | null = null;
+  selectedLessonDifficulty: LessonDifficulty | null = null;
   readonly optionLabels = ['A', 'B', 'C', 'D'] as const;
   selectedOptions: Record<string, number | null> = {};
   quizQuestions: LessonQuizQuestion[] = [];
@@ -43,24 +43,24 @@ export class LessonsTab {
 
   readonly lessons: LessonSummary[] = [
     {
-      difficulty: 'Easy',
-      slug: 'easy',
+      difficultyLabel: 'Easy',
+      difficulty: 'easy',
       title: 'Poker Basics',
       description:
         'Learn the essentials—hand rankings, rules, positions, and core table etiquette to build a solid foundation.',
       cta: 'Start Easy Drills'
     },
     {
-      difficulty: 'Medium',
-      slug: 'medium',
+      difficultyLabel: 'Medium',
+      difficulty: 'medium',
       title: 'Smart Play Spotlights',
       description:
         'Level up with odds, table dynamics, and practical strategy to make better decisions in common scenarios.',
       cta: 'Tackle Medium Spots'
     },
     {
-      difficulty: 'Hard',
-      slug: 'hard',
+      difficultyLabel: 'Hard',
+      difficulty: 'hard',
       title: 'Elite Strategy',
       description:
         'Tackle advanced concepts — range construction, ICM, and GTO-inspired reasoning for high-level competitive play.',
@@ -69,18 +69,18 @@ export class LessonsTab {
   ];
 
   get selectedLesson(): LessonSummary | null {
-    return this.lessons.find((lesson) => lesson.slug === this.selectedLessonSlug) ?? null;
+    return this.lessons.find((lesson) => lesson.difficulty === this.selectedLessonDifficulty) ?? null;
   }
 
-  startLesson(slug: LessonDifficulty) {
-    this.selectedLessonSlug = slug;
+  startLesson(difficulty: LessonDifficulty) {
+    this.selectedLessonDifficulty = difficulty;
     this.resetProgress();
-    void this.loadQuiz(slug);
-    void this.loadRecentResults(slug);
+    void this.loadQuiz(difficulty);
+    void this.loadRecentResults(difficulty);
   }
 
   exitLesson() {
-    this.selectedLessonSlug = null;
+    this.selectedLessonDifficulty = null;
     this.quizQuestions = [];
     this.loadError = null;
     this.isQuizLoading = false;
@@ -104,21 +104,21 @@ export class LessonsTab {
   }
 
   retryLoad() {
-    if (!this.selectedLessonSlug) {
+    if (!this.selectedLessonDifficulty) {
       return;
     }
 
     this.resetProgress();
-    void this.loadQuiz(this.selectedLessonSlug);
+    void this.loadQuiz(this.selectedLessonDifficulty);
   }
 
-  private async loadQuiz(slug: LessonDifficulty) {
+  private async loadQuiz(difficulty: LessonDifficulty) {
     this.isQuizLoading = true;
     this.loadError = null;
     this.quizQuestions = [];
 
     try {
-      const response = await firstValueFrom(this.lessonService.getQuiz(slug));
+      const response = await firstValueFrom(this.lessonService.getQuiz(difficulty));
       this.quizQuestions = response.questions;
     } catch (error) {
       console.error('Failed to load quiz questions', error);
@@ -210,7 +210,7 @@ export class LessonsTab {
   }
 
   private async persistQuizResult() {
-    if (!this.quizSummary || !this.selectedLessonSlug || !this.selectedLesson) {
+    if (!this.quizSummary || !this.selectedLessonDifficulty || !this.selectedLesson) {
       return;
     }
 
@@ -220,8 +220,8 @@ export class LessonsTab {
     try {
       await firstValueFrom(
         this.lessonService.submitQuizResult({
-          difficulty: this.selectedLessonSlug,
-          difficultyLabel: this.selectedLesson.difficulty,
+          difficulty: this.selectedLessonDifficulty,
+          difficultyLabel: this.selectedLesson.difficultyLabel,
           correct: this.quizSummary.correct,
           total: this.quizSummary.total,
           percentage: this.quizSummary.percentage,
@@ -230,7 +230,7 @@ export class LessonsTab {
           }
         })
       );
-      await this.loadRecentResults(this.selectedLessonSlug);
+      await this.loadRecentResults(this.selectedLessonDifficulty);
     } catch (error) {
       console.error('Failed to save quiz result', error);
       this.resultSaveError = 'Unable to save your quiz result right now.';
@@ -239,9 +239,9 @@ export class LessonsTab {
     }
   }
 
-  private async loadRecentResults(slug: LessonDifficulty) {
+  private async loadRecentResults(difficulty: LessonDifficulty) {
     try {
-      const response = await firstValueFrom(this.lessonService.getRecentResults(slug, 6));
+      const response = await firstValueFrom(this.lessonService.getRecentResults(difficulty, 6));
       this.recentResults = response.results;
     } catch (error) {
       console.error('Failed to load quiz history', error);

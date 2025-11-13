@@ -5,6 +5,7 @@ const collectionName = process.env.MONGODB_COLLECTION || 'quizresults';
 
 const quizResultSchema = new Schema(
   {
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     difficulty: { type: String, required: true, lowercase: true, trim: true },
     difficultyLabel: { type: String, required: true, trim: true },
     correct: { type: Number, required: true, min: 0 },
@@ -20,6 +21,7 @@ const quizResultSchema = new Schema(
   }
 );
 
+quizResultSchema.index({ user: 1, submittedAt: -1 });
 quizResultSchema.index({ difficulty: 1, submittedAt: -1 });
 
 module.exports = model('QuizResult', quizResultSchema, collectionName);
