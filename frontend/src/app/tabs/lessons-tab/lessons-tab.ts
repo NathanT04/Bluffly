@@ -3,15 +3,12 @@ import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import {
   LessonService,
-  LessonDifficultySlug,
+  LessonDifficulty,
   LessonQuizQuestion,
   LessonQuizResult
 } from '../../services/lesson.service';
 
-type LessonDifficulty = LessonDifficultySlug;
-
 type LessonSummary = {
-  difficultyLabel: 'Easy' | 'Medium' | 'Hard';
   difficulty: LessonDifficulty;
   title: string;
   description: string;
@@ -43,7 +40,6 @@ export class LessonsTab {
 
   readonly lessons: LessonSummary[] = [
     {
-      difficultyLabel: 'Easy',
       difficulty: 'easy',
       title: 'Poker Basics',
       description:
@@ -51,7 +47,6 @@ export class LessonsTab {
       cta: 'Start Easy Drills'
     },
     {
-      difficultyLabel: 'Medium',
       difficulty: 'medium',
       title: 'Smart Play Spotlights',
       description:
@@ -59,7 +54,6 @@ export class LessonsTab {
       cta: 'Tackle Medium Spots'
     },
     {
-      difficultyLabel: 'Hard',
       difficulty: 'hard',
       title: 'Elite Strategy',
       description:
@@ -221,7 +215,6 @@ export class LessonsTab {
       await firstValueFrom(
         this.lessonService.submitQuizResult({
           difficulty: this.selectedLessonDifficulty,
-          difficultyLabel: this.selectedLesson.difficultyLabel,
           correct: this.quizSummary.correct,
           total: this.quizSummary.total,
           percentage: this.quizSummary.percentage,

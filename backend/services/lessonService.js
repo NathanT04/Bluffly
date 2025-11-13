@@ -94,8 +94,7 @@ exports.fetchRandomQuestionsByDifficulty = async (difficultyKey, rawLimit) => {
   const documents = await LessonQuestion.aggregate(pipeline).exec();
 
   return {
-    difficultyKey: key,
-    difficulty: difficultyLabel,
+    difficulty: key,
     limit,
     count: documents.length,
     questions: documents.map(toQuizQuestion)

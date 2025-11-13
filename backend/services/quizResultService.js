@@ -11,7 +11,7 @@ function sanitizeLimit(rawLimit) {
   return Math.min(Math.max(parsed, 1), MAX_HISTORY_LIMIT);
 }
 
-exports.createResult = async ({ userId, difficulty, difficultyLabel, correct, total, percentage, metadata }) => {
+exports.createResult = async ({ userId, difficulty, correct, total, percentage, metadata }) => {
   await connectMongoose();
 
   if (!userId) {
@@ -21,9 +21,8 @@ exports.createResult = async ({ userId, difficulty, difficultyLabel, correct, to
   }
 
   const safeDifficulty = typeof difficulty === 'string' ? difficulty.trim().toLowerCase() : '';
-  const safeLabel = typeof difficultyLabel === 'string' ? difficultyLabel.trim() : '';
 
-  if (!safeDifficulty || !safeLabel) {
+  if (!safeDifficulty) {
     const error = new Error('A valid lesson difficulty is required.');
     error.statusCode = 400;
     throw error;
@@ -44,7 +43,6 @@ exports.createResult = async ({ userId, difficulty, difficultyLabel, correct, to
   const doc = await QuizResult.create({
     user: userId,
     difficulty: safeDifficulty,
-    difficultyLabel: safeLabel,
     correct: safeCorrect,
     total,
     percentage: safePercentage,
@@ -54,7 +52,6 @@ exports.createResult = async ({ userId, difficulty, difficultyLabel, correct, to
   return {
     id: doc.id,
     difficulty: doc.difficulty,
-    difficultyLabel: doc.difficultyLabel,
     correct: doc.correct,
     total: doc.total,
     percentage: doc.percentage,
@@ -85,7 +82,6 @@ exports.listResults = async ({ userId, difficulty, limit } = {}) => {
   return docs.map((doc) => ({
     id: doc._id?.toString() ?? undefined,
     difficulty: doc.difficulty,
-    difficultyLabel: doc.difficultyLabel,
     correct: doc.correct,
     total: doc.total,
     percentage: doc.percentage,
