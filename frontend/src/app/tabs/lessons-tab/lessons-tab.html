@@ -29,6 +29,63 @@
         </article>
       </div>
     </div>
+
+    <section class="lesson-history lesson-history--global mt-5">
+      <header class="lesson-history__header">
+        <h3>Quiz Results</h3>
+        <button
+          type="button"
+          class="lesson-history__refresh"
+          (click)="loadAllQuizResults()"
+          [disabled]="isAllResultsLoading"
+        >
+          Refresh
+        </button>
+      </header>
+
+      <div *ngIf="isAllResultsLoading" class="lesson-feedback lesson-feedback--loading">
+        Loading quiz results…
+      </div>
+
+      <div *ngIf="!isAllResultsLoading && allResultsError" class="lesson-feedback lesson-feedback--error">
+        {{ allResultsError }}
+      </div>
+
+      <p
+        *ngIf="!isAllResultsLoading && !allResultsError && allQuizResults.length === 0"
+        class="lesson-feedback lesson-feedback--empty"
+      >
+        No quiz results yet. Complete a quiz to see your history.
+      </p>
+
+      <div
+        class="row row-cols-1 row-cols-md-3 g-3"
+        *ngIf="!isAllResultsLoading && !allResultsError && allQuizResults.length > 0"
+      >
+        <div class="col" *ngFor="let result of allQuizResults">
+          <div class="history-card">
+            <div class="history-card__meta">
+              <span
+                class="history-card__difficulty"
+                [ngClass]="'history-card__difficulty--' + result.difficulty"
+              >
+                {{ result.difficultyLabel || (result.difficulty | titlecase) }}
+              </span>
+              <time class="history-card__time">
+                {{ result.submittedAt | date : 'short' }}
+              </time>
+            </div>
+            <div class="history-card__score">
+              <strong>{{ result.correct }}</strong>
+              <span>/ {{ result.total }}</span>
+            </div>
+            <div class="history-card__percentage">
+              {{ result.percentage }}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </ng-container>
 
   <ng-template #lessonDetail>
@@ -161,7 +218,12 @@
             <div class="col" *ngFor="let result of recentResults">
               <div class="history-card">
                 <div class="history-card__meta">
-                  <span class="history-card__difficulty">{{ result.difficulty }}</span>
+                  <span
+                    class="history-card__difficulty"
+                    [ngClass]="'history-card__difficulty--' + result.difficulty"
+                  >
+                    {{ result.difficultyLabel || (result.difficulty | titlecase) }}
+                  </span>
                   <time class="history-card__time">
                     {{ result.submittedAt | date : 'short' }}
                   </time>
