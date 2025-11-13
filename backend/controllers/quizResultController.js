@@ -10,7 +10,6 @@ exports.createResult = async (req, res, next) => {
     const payload = {
       userId,
       difficulty: req.body?.difficulty,
-      difficultyLabel: req.body?.difficultyLabel,
       correct: req.body?.correct,
       total: req.body?.total,
       percentage: req.body?.percentage,

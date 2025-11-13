@@ -7,7 +7,6 @@ const quizResultSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     difficulty: { type: String, required: true, lowercase: true, trim: true },
-    difficultyLabel: { type: String, required: true, trim: true },
     correct: { type: Number, required: true, min: 0 },
     total: { type: Number, required: true, min: 1 },
     percentage: { type: Number, required: true, min: 0, max: 100 },

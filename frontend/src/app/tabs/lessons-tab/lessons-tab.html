@@ -17,7 +17,7 @@
       >
         <article class="lesson-card h-100">
           <header class="lesson-card__header">
-            <span class="lesson-card__difficulty">{{ lesson.difficultyLabel }}</span>
+            <span class="lesson-card__difficulty">{{ lesson.difficulty | titlecase }}</span>
             <h3 class="lesson-card__title">{{ lesson.title }}</h3>
           </header>
           <p class="lesson-card__description">
@@ -39,7 +39,7 @@
 
       <div class="col-12">
         <header class="lesson-detail__header">
-          <span class="lesson-detail__difficulty">{{ selectedLesson?.difficultyLabel }} Mode</span>
+          <span class="lesson-detail__difficulty">{{ selectedLesson?.difficulty | titlecase }} Mode</span>
           <h2 class="lesson-detail__title">{{ selectedLesson?.title }}</h2>
           <p class="lesson-detail__description">
             {{ selectedLesson?.description }}
