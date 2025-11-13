@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-const collectionName = process.env.MONGODB_COLLECTION || 'quizresults';
+const collectionName = process.env.MONGODB_QUIZ_RESULTS_COLLECTION || 'quizresults';
 
 
 const quizResultSchema = new Schema(

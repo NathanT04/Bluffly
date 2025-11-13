@@ -2,23 +2,21 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
+const path = require('path');
 
 const analyzerRoutes = require('./routes/analyzerRoutes');
 const lessonRoutes = require('./routes/lessonRoutes');
 const tableRoutes = require('./routes/tableRoutes');
+const authRoutes = require('./routes/auth');
+const pageRoutes = require('./routes/pages');
 const { connectMongoose } = require('./services/mongoClient');
-const path = require('path');
-require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/analyzer', analyzerRoutes);
-app.use('/api/lessons', lessonRoutes);
-app.use('/api/table', tableRoutes);
-
-// Session configuration
+// Session configuration must be registered before any routes
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-fallback-secret',
   resave: false,
@@ -29,17 +27,13 @@ app.use(session({
   }
 }));
 
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
-const authRoutes = require('./routes/auth');
-const pageRoutes = require('./routes/pages');
-
+app.use('/api/analyzer', analyzerRoutes);
+app.use('/api/lessons', lessonRoutes);
+app.use('/api/table', tableRoutes);
 app.use('/auth', authRoutes);
 app.use('/api', pageRoutes);
 
