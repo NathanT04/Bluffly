@@ -1,5 +1,6 @@
 const express = require('express');
 const googleClient = require('../config/google-auth');
+const userService = require('../services/userService');
 const router = express.Router();
 
 // Initiate Google OAuth
@@ -44,8 +45,16 @@ router.get('/google/callback', async (req, res) => {
       verified: payload.email_verified
     };
 
+    const dbUser = await userService.findOrCreateOAuthUser({
+      authProvider: 'google',
+      providerId: userInfo.id,
+      email: userInfo.email,
+      name: userInfo.name
+    });
+
     // Store user info in session
-    req.session.user = userInfo;
+    req.session.userId = dbUser.id;
+    req.session.user = { ...userInfo, dbId: dbUser.id };
     req.session.isAuthenticated = true;
 
     // Redirect back to Angular homepage with success
