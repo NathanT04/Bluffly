@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const LessonQuestion = require('../models/lessonQuestion');
 const { connectMongoose } = require('./mongoClient');
 
@@ -41,20 +42,64 @@ function toOptionArray(document) {
     .filter((option) => option.length > 0);
 }
 
+function getRandomInt(maxExclusive) {
+  if (maxExclusive <= 0) {
+    return 0;
+  }
+
+  if (typeof crypto.randomInt === 'function') {
+    return crypto.randomInt(maxExclusive);
+  }
+
+  return Math.floor(Math.random() * maxExclusive);
+}
+
+function shuffleQuestionOptions(options, correctAnswerIndex) {
+  if (!Array.isArray(options) || options.length === 0 || typeof correctAnswerIndex !== 'number') {
+    return { options, correctAnswerIndex: undefined };
+  }
+
+  if (correctAnswerIndex < 0 || correctAnswerIndex >= options.length) {
+    return { options, correctAnswerIndex: undefined };
+  }
+
+  const entries = options.map((option, index) => ({
+    option,
+    isCorrect: index === correctAnswerIndex
+  }));
+
+  for (let i = entries.length - 1; i > 0; i -= 1) {
+    const swapIndex = getRandomInt(i + 1);
+    [entries[i], entries[swapIndex]] = [entries[swapIndex], entries[i]];
+  }
+
+  const updatedCorrectIndex = entries.findIndex((entry) => entry.isCorrect);
+
+  return {
+    options: entries.map((entry) => entry.option),
+    correctAnswerIndex: updatedCorrectIndex === -1 ? undefined : updatedCorrectIndex
+  };
+}
+
 function toQuizQuestion(document) {
   const correctAnswerIndex =
     typeof document.correct_answer_index === 'number'
       ? document.correct_answer_index
       : Number.parseInt(document.correct_answer_index, 10);
 
+  const optionArray = toOptionArray(document);
+  const normalizedCorrectIndex =
+    Number.isInteger(correctAnswerIndex) && correctAnswerIndex >= 0 ? correctAnswerIndex : undefined;
+  const { options, correctAnswerIndex: shuffledCorrectIndex } = shuffleQuestionOptions(
+    optionArray,
+    normalizedCorrectIndex
+  );
+
   return {
     id: document.id,
     prompt: document.question,
-    options: toOptionArray(document),
-    correctAnswerIndex:
-      Number.isInteger(correctAnswerIndex) && correctAnswerIndex >= 0
-        ? correctAnswerIndex
-        : undefined,
+    options,
+    correctAnswerIndex: shuffledCorrectIndex,
     explanation: document.explanation ?? undefined
   };
 }
