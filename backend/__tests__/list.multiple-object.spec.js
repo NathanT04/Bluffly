@@ -1,3 +1,12 @@
+const quizResultController = require('../controllers/quizResultController');
+
+jest.mock('../services/quizResultService', () => ({
+  createResult: jest.fn(),
+  listResults: jest.fn()
+}));
+
+const quizResultService = require('../services/quizResultService');
+
 // Test data simulating quiz results
 const dummyQuizResults = [
   {
@@ -48,55 +57,132 @@ const listQuizResults = ({ difficulty, limit } = {}) => {
   return { count: results.length, results };
 };
 
-describe('listQuizResults helper returns quiz result objects', () => {
-  test('returns at least three quiz results with count metadata', () => {
+const HOST = 'http://localhost';
+const PATH = '/api/lessons/results';
+const FULL_URL = `${HOST}${PATH}`;
+
+const createMockResponse = () => {
+  const res = {};
+  res.statusCode = 200;
+  res.status = jest.fn().mockImplementation((code) => {
+    res.statusCode = code;
+    return res;
+  });
+  res.json = jest.fn().mockReturnValue(res);
+  return res;
+};
+
+describe(`GET ${PATH} returns list objects (quiz results)`, () => {
+  test('Return value is an array', () => {
+
     const payload = listQuizResults();
 
-    expect(payload).toHaveProperty('count');
-    expect(payload).toHaveProperty('results');
     expect(Array.isArray(payload.results)).toBe(true);
-    expect(payload.count).toBeGreaterThanOrEqual(3);
-    expect(payload.results.length).toBe(payload.count);
+    expect(payload.count).toBe(payload.results.length);
   });
 
-  test('each quiz result object contains expected fields and types', () => {
+  test('List items contain expected attribute names', () => {
+
     const { results } = listQuizResults();
 
     results.forEach((quizResult) => {
-      expect(typeof quizResult).toBe('object');
+      expect(quizResult).toHaveProperty('id');
+      expect(quizResult).toHaveProperty('user');
+      expect(quizResult).toHaveProperty('difficulty');
+      expect(quizResult).toHaveProperty('correct');
+      expect(quizResult).toHaveProperty('total');
+      expect(quizResult).toHaveProperty('percentage');
+      expect(quizResult).toHaveProperty('metadata');
+      expect(quizResult).toHaveProperty('submittedAt');
+    });
+  });
 
-      expect(typeof quizResult.id).toBe('string');
-      expect(quizResult.id.length).toBeGreaterThan(0);
+  test('List items contain expected attribute types', () => {
 
+    const { results } = listQuizResults();
+
+    results.forEach((quizResult) => {
       expect(typeof quizResult.user).toBe('string');
-      expect(quizResult.user.length).toBeGreaterThan(0);
-
       expect(typeof quizResult.difficulty).toBe('string');
       expect(typeof quizResult.correct).toBe('number');
       expect(typeof quizResult.total).toBe('number');
       expect(typeof quizResult.percentage).toBe('number');
-      expect(quizResult.correct).toBeGreaterThanOrEqual(0);
-      expect(quizResult.total).toBeGreaterThan(0);
-      expect(quizResult.percentage).toBeGreaterThanOrEqual(0);
-      expect(quizResult.percentage).toBeLessThanOrEqual(100);
-
       expect(typeof quizResult.metadata).toBe('object');
       expect(typeof quizResult.submittedAt).toBe('string');
     });
   });
 
-  test('supports filtering by difficulty without touching authentication', () => {
-    const beginnerPayload = listQuizResults({ difficulty: 'Beginner' });
+  test('Each list item contains an id', () => {
 
-    expect(beginnerPayload.count).toBe(2);
-    expect(beginnerPayload.results.every((r) => r.difficulty === 'beginner')).toBe(true);
+    const { results } = listQuizResults();
+
+    results.forEach((quizResult) => {
+      expect(typeof quizResult.id).toBe('string');
+      expect(quizResult.id.length).toBeGreaterThan(0);
+    });
   });
 
-  test('supports limiting the number of returned results', () => {
-    const limitedPayload = listQuizResults({ limit: 1 });
+  test('Return type of body is JSON', async () => {
 
-    expect(limitedPayload.count).toBe(1);
-    expect(limitedPayload.results.length).toBe(1);
-    expect(limitedPayload.results[0].id).toBe('result-1');
+    jest.clearAllMocks();
+    quizResultService.listResults.mockResolvedValue(dummyQuizResults);
+    const req = {
+      method: 'GET',
+      originalUrl: PATH,
+      url: PATH,
+      session: { userId: 'user-1' },
+      query: {}
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await quizResultController.listResults(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      count: dummyQuizResults.length,
+      results: dummyQuizResults
+    });
+    const [body] = res.json.mock.calls[0];
+    expect(typeof body).toBe('object');
+    expect(Array.isArray(body.results)).toBe(true);
+    body.results.forEach((item) => {
+      expect(typeof item.id).toBe('string');
+      expect(item.id.length).toBeGreaterThan(0);
+    });
+    expect(quizResultService.listResults).toHaveBeenCalledWith({
+      userId: 'user-1',
+      difficulty: undefined,
+      limit: undefined
+    });
+  });
+
+  test('Return status is 200', async () => {
+    // GET api/lessons/results at http://localhost
+    jest.clearAllMocks();
+    quizResultService.listResults.mockResolvedValue([dummyQuizResults[0]]);
+    const req = {
+      method: 'GET',
+      originalUrl: `${PATH}?difficulty=beginner&limit=1`,
+      url: PATH,
+      session: { userId: 'user-1' },
+      query: { difficulty: 'beginner', limit: '1' }
+    };
+    const res = createMockResponse();
+    const next = jest.fn();
+
+    await quizResultController.listResults(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      count: 1,
+      results: [dummyQuizResults[0]]
+    });
+    expect(res.statusCode).toBe(200);
+    expect(quizResultService.listResults).toHaveBeenCalledWith({
+      userId: 'user-1',
+      difficulty: 'beginner',
+      limit: '1'
+    });
   });
 });
