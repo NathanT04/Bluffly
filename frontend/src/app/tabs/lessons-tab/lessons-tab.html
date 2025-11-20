@@ -69,7 +69,7 @@
                 class="history-card__difficulty"
                 [ngClass]="'history-card__difficulty--' + result.difficulty"
               >
-                {{ result.difficultyLabel || (result.difficulty | titlecase) }}
+                {{ result.difficulty | titlecase }}
               </span>
               <time class="history-card__time">
                 {{ result.submittedAt | date : 'short' }}
@@ -222,7 +222,7 @@
                     class="history-card__difficulty"
                     [ngClass]="'history-card__difficulty--' + result.difficulty"
                   >
-                    {{ result.difficultyLabel || (result.difficulty | titlecase) }}
+                    {{ result.difficulty | titlecase }}
                   </span>
                   <time class="history-card__time">
                     {{ result.submittedAt | date : 'short' }}
