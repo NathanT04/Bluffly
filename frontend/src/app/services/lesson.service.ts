@@ -26,6 +26,7 @@ export interface LessonQuizResult {
   total: number;
   percentage: number;
   submittedAt: string;
+  difficultyLabel?: string;
 }
 
 export interface LessonQuizResultListResponse {

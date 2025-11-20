@@ -9,6 +9,9 @@ exports.createTable = (req, res, next) => {
       : 100;
 
     const state = createGame({ players, startingStack });
+    if (state.toAct > 0) {
+      runVillainAuto(state);
+    }
     saveTable(state.id, state);
     return res.status(201).json(toSnapshot(state));
   } catch (err) {
