@@ -17,6 +17,7 @@ export interface GameResult {
   payouts: Record<string, number>;
   hero: { handName: string };
   villain: { handName: string };
+  hands?: { id: string; name: string; handName: string }[];
 }
 
 export interface GameSnapshot {

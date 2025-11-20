@@ -22,6 +22,8 @@ export class SimulationTab {
   snapshot: GameSnapshot | null = null;
   busy = false;
   raiseTo = 4;
+  botCount = 1;
+  readonly maxBots = 3;
   readonly phaseFlow: Phase[] = ['preflop', 'flop', 'turn', 'river', 'showdown'];
   actionLog: ActionLogEntry[] = [];
   showRaise = false;
@@ -34,7 +36,8 @@ export class SimulationTab {
   newGame() {
     if (this.busy) return;
     this.busy = true;
-    this.sim.createTable(2, 100).subscribe({
+    const seats = Math.min(this.maxBots + 1, Math.max(2, this.botCount + 1));
+    this.sim.createTable(seats, 100).subscribe({
       next: snap => {
         this.processSnapshot(snap, true);
         this.busy = false;
@@ -50,12 +53,33 @@ export class SimulationTab {
     return !!this.snapshot && this.snapshot.phase !== 'showdown' && this.snapshot.toAct === 0;
   }
 
+  get bots(): PlayerSeat[] {
+    return this.snapshot?.players?.slice(1, 4) ?? [];
+  }
+
+  get botSlots(): (PlayerSeat | null)[] {
+    const slots: (PlayerSeat | null)[] = [null, null, null];
+    this.bots.forEach((b, idx) => {
+      if (idx < slots.length) slots[idx] = b;
+    });
+    return slots;
+  }
+
   get player(): PlayerSeat | null {
     return this.snapshot?.players?.[0] ?? null;
   }
 
-  get bot(): PlayerSeat | null {
-    return this.snapshot?.players?.[1] ?? null;
+  isTurn(idx: number): boolean {
+    return !!this.snapshot && this.snapshot.toAct === idx && this.snapshot.phase !== 'showdown';
+  }
+
+  botLabel(slotIndex: number, player: PlayerSeat | null): string {
+    if (player?.name) return player.name;
+    return `Bot ${slotIndex + 1}`;
+  }
+
+  botTurn(slotIndex: number): boolean {
+    return this.isTurn(slotIndex + 1);
   }
 
   get callLabel(): string {
@@ -143,6 +167,11 @@ export class SimulationTab {
   }
   raise() { this.doAct('raise', this.raiseTo); }
 
+  changeBotCount(delta: number) {
+    const next = Math.min(this.maxBots, Math.max(1, this.botCount + delta));
+    this.botCount = next;
+  }
+
   enterRaise() {
     if (!this.snapshot || !this.snapshot.availableActions?.includes('raise')) return;
     this.showRaise = true;
@@ -202,5 +231,18 @@ export class SimulationTab {
 
   private formatPhaseLabel(phase: Phase) {
     return phase.charAt(0).toUpperCase() + phase.slice(1);
+  }
+
+  seatLabel(playerId: string | null): string {
+    if (!playerId || !this.snapshot?.players) return '';
+    const p = this.snapshot.players.find(pl => pl.id === playerId);
+    return p?.name ?? '';
+  }
+
+  winnerLabel(playerId: string): string {
+    const result = this.snapshot?.result;
+    if (!result) return '';
+    if (result.winner === 'split') return 'Split Pot';
+    return result.winner === playerId ? 'Winner' : 'Runner-up';
   }
 }

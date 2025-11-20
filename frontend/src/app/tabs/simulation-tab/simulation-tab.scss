@@ -30,6 +30,58 @@
     }
   }
 
+  .bot-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+
+    .label {
+      font-size: 0.85rem;
+      color: rgba(226, 232, 240, 0.85);
+      letter-spacing: 0.04em;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    button {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 1rem;
+      line-height: 1;
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+      }
+    }
+
+    .count {
+      min-width: 28px;
+      text-align: center;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+  }
+
   /* Header spacing tweaks */
   .header-row {
     margin-bottom: 1.5rem; /* a bit more space below header */
@@ -48,7 +100,7 @@
 
   .table-shell {
     border-radius: 32px;
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 1.75rem;
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(8, 47, 35, 0.92));
     border: 1px solid rgba(148, 163, 184, 0.2);
     box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.6), 0 20px 45px rgba(0, 0, 0, 0.45);
@@ -80,6 +132,8 @@
         display: grid;
         place-items: center;
         font-size: 0.85rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
       }
 
       &.active {
@@ -97,27 +151,34 @@
 
   .table-rail {
     border-radius: 999px;
-    min-height: 320px;
-    padding: 1.25rem 1.25rem 1.5rem;
+    min-height: 480px;
+    padding: 1.5rem 1.75rem 2rem;
     background: radial-gradient(circle at 50% 50%, #0b5d3b 0%, #083a26 70%);
     border: 10px solid #2c1b0f;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+  }
+
+  .seats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      ". top ."
+      "left center right"
+      ". hero .";
     align-items: center;
+    justify-items: center;
+    gap: 1.2rem 1.5rem;
   }
 
   .table-center {
-    width: 100%;
+    grid-area: center;
+    width: min(520px, 100%);
     display: flex;
-    gap: 1.25rem;
-    flex-wrap: wrap;
-    align-items: stretch;
     justify-content: center;
   }
 
   .board-stack {
-    flex: 1 1 360px;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
@@ -213,6 +274,7 @@
   }
 
   .seat {
+    width: min(240px, 100%);
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -246,14 +308,15 @@
     }
 
     .seat-body {
-      padding: 0.75rem 1rem;
+      flex-direction: column;
+      padding: 0.65rem 0.9rem;
       border-radius: 16px;
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
+      justify-content: center;
+      gap: 0.65rem;
 
       &.turn {
         box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.45);
@@ -261,7 +324,8 @@
 
       .hand {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.25rem;
+        flex-wrap: nowrap;
       }
 
       .status {
@@ -270,6 +334,11 @@
       }
     }
   }
+
+  .pos-left { grid-area: left; justify-self: start; }
+  .pos-top { grid-area: top; }
+  .pos-right { grid-area: right; justify-self: end; }
+  .pos-hero { grid-area: hero; max-width: 360px; }
 
   .table-footer {
     background: rgba(0, 0, 0, 0.35);
@@ -485,9 +554,25 @@
     }
   }
 
+  .table-rail .playing-card {
+    width: 42px;
+    height: 58px;
+  }
+
   @media (max-width: 1024px) {
     .play-layout {
       grid-template-columns: 1fr;
+    }
+    .seats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-areas:
+        ". top ."
+        "left center right"
+        "hero hero hero";
+    }
+    .pos-left,
+    .pos-right {
+      justify-self: center;
     }
   }
 
@@ -514,6 +599,22 @@
     .table-footer {
       width: 100%;
       text-align: center;
+    }
+
+    .seats-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "top"
+        "left"
+        "center"
+        "right"
+        "hero";
+      gap: 0.85rem;
+    }
+    .seat {
+      max-width: 360px;
+      justify-self: center;
+      width: 100%;
     }
   }
 }
