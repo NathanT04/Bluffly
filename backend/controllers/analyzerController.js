@@ -1,5 +1,6 @@
 const equityService = require('../services/equityService');
 const { getGtoRecommendation } = require('../services/gtoSolverService');
+const { getPlayExplanation } = require('../services/geminiService');
 
 const CARD_PATTERN = /^(A|K|Q|J|T|9|8|7|6|5|4|3|2)(s|h|d|c)$/i;
 const MAX_BOARD_CARDS = 5;
@@ -55,7 +56,19 @@ const hasDuplicates = cards => {
   return set.size !== cards.length;
 };
 
-exports.analyzeEquity = (req, res, next) => {
+const formatPotOddsRatio = equityPercentage => {
+  const equity = equityPercentage / 100;
+  if (!Number.isFinite(equity) || equity <= 0) {
+    return '0.00 : 1';
+  }
+  if (equity >= 1) {
+    return '∞ : 1';
+  }
+  const ratio = 1 / equity - 1;
+  return `${ratio.toFixed(2)} : 1`;
+};
+
+exports.analyzeEquity = async (req, res, next) => {
   try {
     const hero = parseHand(req.body?.hero, 2);
     const board = parseBoard(req.body?.board ?? []);
@@ -84,9 +97,25 @@ exports.analyzeEquity = (req, res, next) => {
 
     const result = equityService.calculateHeroEquity(hero, board, iterations);
     const gto = getGtoRecommendation(hero, board);
+
+    let aiExplanation = null;
+    try {
+      const potOddsRatio = formatPotOddsRatio(result?.equity?.percentage ?? 0);
+      aiExplanation = await getPlayExplanation({
+        hero,
+        board,
+        equityPercentage: result?.equity?.percentage ?? 0,
+        potOddsRatio,
+        gtoSummary: gto
+      });
+    } catch (geminiError) {
+      console.error('Failed to generate Gemini explanation', geminiError);
+    }
+
     return res.json({
       ...result,
-      gto
+      gto,
+      aiExplanation
     });
   } catch (error) {
     return next(error);

@@ -20,6 +20,11 @@
     {{ message }}
   </p>
 
+  <div class="ai-explanation" *ngIf="aiExplanation">
+    <span class="ai-explanation__label">Coach Bluffly</span>
+    <p>{{ aiExplanation }}</p>
+  </div>
+
   <p class="hint" *ngIf="!hasSubmission">
     Select your cards and press “Calculate Equity” to request results.
   </p>

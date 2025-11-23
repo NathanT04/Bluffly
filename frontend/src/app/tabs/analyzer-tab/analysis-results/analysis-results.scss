@@ -47,6 +47,30 @@
     font-size: 0.95rem;
   }
 
+  .ai-explanation {
+    margin-top: 1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(94, 234, 212, 0.35);
+    background-color: rgba(14, 116, 144, 0.18);
+    color: #e0f2fe;
+    line-height: 1.5;
+
+    &__label {
+      display: inline-block;
+      margin-bottom: 0.35rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(125, 211, 252, 0.9);
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  }
+
   .hint {
     margin-top: 1.5rem;
     color: rgba(209, 213, 219, 0.75);
