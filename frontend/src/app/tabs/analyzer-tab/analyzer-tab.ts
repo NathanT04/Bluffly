@@ -28,6 +28,7 @@ export class AnalyzerTab implements OnInit {
   equity: string | null = null;
   potOdds: string | null = null;
   gtoAction: string | null = null;
+  aiExplanation: string | null = null;
   resultMessage = '';
   hasSubmission = false;
   isCalculating = false;
@@ -69,6 +70,7 @@ export class AnalyzerTab implements OnInit {
     this.hasSubmission = true;
     this.equity = null;
     this.potOdds = null;
+    this.aiExplanation = null;
     this.resultMessage = 'Running equity simulation against a random opponent range...';
     this.gtoAction = null;
     this.isCalculating = true;
@@ -89,6 +91,7 @@ export class AnalyzerTab implements OnInit {
           this.potOdds = this.formatPotOddsRatio(equityPercentage);
           const gtoSummary = this.describeGto(response?.gto);
           this.gtoAction = gtoSummary.primaryAction;
+          this.aiExplanation = response?.aiExplanation?.trim() || null;
           const potMessage =
             'Pot odds show the minimum pot-to-call ratio to break even with your current equity.';
           this.resultMessage = gtoSummary.note ? `${potMessage} ${gtoSummary.note}` : potMessage;
@@ -187,6 +190,7 @@ type AnalyzerResponse = {
   board: string[];
   iterations: number;
   gto?: GtoResponse;
+  aiExplanation?: string | null;
 };
 
 type GtoResponse = {
