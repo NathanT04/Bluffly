@@ -15,6 +15,14 @@ type LessonSummary = {
   cta: string;
 };
 
+type PracticeSet = {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: LessonDifficulty;
+  vibe: string;
+};
+
 @Component({
   selector: 'app-lessons-tab',
   standalone: true,
@@ -66,8 +74,48 @@ export class LessonsTab implements OnInit {
   isAllResultsLoading = false;
   allResultsError: string | null = null;
 
+  readonly practiceSets: PracticeSet[] = [
+    {
+      id: 'warmup',
+      title: 'Warm-Up Drills',
+      description: 'Quick checks on fundamentals and terminology to keep the basics sharp.',
+      difficulty: 'easy',
+      vibe: 'Fast reps'
+    },
+    {
+      id: 'pattern-reads',
+      title: 'Pattern Reads',
+      description: 'Identify betting lines, spots to float, and turn/river pivots.',
+      difficulty: 'medium',
+      vibe: 'Spot the play'
+    },
+    {
+      id: 'pressure-tests',
+      title: 'Pressure Tests',
+      description: 'Tough, high-leverage decisions with detailed explanations.',
+      difficulty: 'hard',
+      vibe: 'ICM heat'
+    }
+  ];
+
+  activePracticeSet: PracticeSet | null = null;
+  practiceQuestions: LessonQuizQuestion[] = [];
+  practiceCurrentIndex = 0;
+  isPracticeLoading = false;
+  practiceError: string | null = null;
+  practiceIsFlipped = false;
+  viewMode: 'list' | 'lesson' | 'practice' = 'list';
+
   get selectedLesson(): LessonSummary | null {
     return this.lessons.find((lesson) => lesson.difficulty === this.selectedLessonDifficulty) ?? null;
+  }
+
+  get activePracticeQuestion(): LessonQuizQuestion | null {
+    if (!this.practiceQuestions.length) {
+      return null;
+    }
+
+    return this.practiceQuestions[this.practiceCurrentIndex] ?? null;
   }
 
   ngOnInit(): void {
@@ -76,6 +124,7 @@ export class LessonsTab implements OnInit {
 
   startLesson(difficulty: LessonDifficulty) {
     this.selectedLessonDifficulty = difficulty;
+    this.viewMode = 'lesson';
     this.resetProgress();
     void this.loadQuiz(difficulty);
     void this.loadRecentResults(difficulty);
@@ -91,6 +140,7 @@ export class LessonsTab implements OnInit {
     this.resultSaveError = null;
     this.recentResults = [];
     this.resetProgress();
+    this.viewMode = 'list';
   }
 
   selectOption(questionId: string, optionIndex: number) {
@@ -264,6 +314,81 @@ export class LessonsTab implements OnInit {
       this.allResultsError = 'Unable to load quiz results right now.';
     } finally {
       this.isAllResultsLoading = false;
+    }
+  }
+
+  startPracticeSet(set: PracticeSet) {
+    this.activePracticeSet = set;
+    this.viewMode = 'practice';
+    this.practiceCurrentIndex = 0;
+    this.practiceQuestions = [];
+    this.practiceError = null;
+    this.practiceIsFlipped = false;
+    void this.loadPracticeQuestions(set);
+  }
+
+  exitPracticeSet() {
+    this.activePracticeSet = null;
+    this.practiceQuestions = [];
+    this.practiceCurrentIndex = 0;
+    this.isPracticeLoading = false;
+    this.practiceError = null;
+    this.practiceIsFlipped = false;
+    this.viewMode = 'list';
+  }
+
+  nextPracticeQuestion() {
+    if (this.practiceCurrentIndex < this.practiceQuestions.length - 1) {
+      this.practiceCurrentIndex += 1;
+      this.practiceIsFlipped = false;
+    }
+  }
+
+  previousPracticeQuestion() {
+    if (this.practiceCurrentIndex > 0) {
+      this.practiceCurrentIndex -= 1;
+      this.practiceIsFlipped = false;
+    }
+  }
+
+  refreshPracticeSet() {
+    if (!this.activePracticeSet || this.isPracticeLoading) {
+      return;
+    }
+
+    this.practiceIsFlipped = false;
+    this.practiceCurrentIndex = 0;
+    void this.loadPracticeQuestions(this.activePracticeSet);
+  }
+
+
+  togglePracticeFlip() {
+    this.practiceIsFlipped = !this.practiceIsFlipped;
+  }
+
+  practiceAnswerText(question: LessonQuizQuestion): string | null {
+    if (typeof question.correctAnswerIndex !== 'number') {
+      return null;
+    }
+
+    return question.options?.[question.correctAnswerIndex] ?? null;
+  }
+
+  private async loadPracticeQuestions(set: PracticeSet) {
+    this.isPracticeLoading = true;
+    this.practiceError = null;
+
+    try {
+      const response = await firstValueFrom(this.lessonService.getQuiz(set.difficulty));
+      this.practiceQuestions = response.questions;
+      this.practiceCurrentIndex = 0;
+      this.practiceIsFlipped = false;
+    } catch (error) {
+      console.error('Failed to load practice set', error);
+      this.practiceError =
+        'Unable to load this practice set right now. Please refresh or try another set.';
+    } finally {
+      this.isPracticeLoading = false;
     }
   }
 }

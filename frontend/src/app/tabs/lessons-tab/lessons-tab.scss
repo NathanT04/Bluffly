@@ -12,6 +12,375 @@
 }
 
 .lessons-tab {
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    color: rgba(148, 163, 184, 0.85);
+    margin: 0 0 0.25rem;
+  }
+
+  .practice-sets {
+    margin-bottom: 2.5rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .practice-sets__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+
+    h2 {
+      margin: 0;
+    }
+
+    p {
+      margin: 0.15rem 0 0;
+    }
+  }
+
+  .practice-sets__hint {
+    margin: 0;
+    color: rgba(148, 163, 184, 0.85);
+    font-size: 0.9rem;
+    max-width: 14rem;
+    text-align: right;
+  }
+
+  .practice-set-card {
+    height: 100%;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(15, 23, 42, 0.75);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      border-color: rgba(248, 113, 113, 0.65);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    &[data-difficulty='easy'] {
+      border-color: rgba(34, 197, 94, 0.28);
+    }
+
+    &[data-difficulty='medium'] {
+      border-color: rgba(234, 179, 8, 0.28);
+    }
+
+    &[data-difficulty='hard'] {
+      border-color: rgba(248, 113, 113, 0.32);
+    }
+
+    &__header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    &__title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    &__difficulty {
+      margin: 0;
+      color: rgba(148, 163, 184, 0.9);
+      font-size: 0.9rem;
+    }
+
+    &__description {
+      margin: 0;
+      color: rgba(226, 232, 240, 0.85);
+      line-height: 1.5rem;
+    }
+
+    &__vibe {
+      align-self: flex-start;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.18);
+      color: rgba(226, 232, 240, 0.95);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    &__cta {
+      margin-top: auto;
+      align-self: flex-start;
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.7rem 1.2rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: #ef4444;
+      color: #f9fafb;
+      cursor: pointer;
+      transition: filter 0.2s ease;
+
+      &:hover,
+      &:focus-visible {
+        filter: brightness(1.1);
+      }
+    }
+  }
+
+  .practice-session {
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(15, 23, 42, 0.75);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .practice-session__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    h3 {
+      margin: 0.1rem 0;
+      font-size: 1.35rem;
+    }
+  }
+
+  .practice-session__meta {
+    margin: 0;
+    color: rgba(148, 163, 184, 0.85);
+  }
+
+  .practice-session__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .practice-session__ghost {
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    color: rgba(248, 250, 252, 0.9);
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(248, 113, 113, 0.12);
+      border-color: rgba(248, 113, 113, 0.65);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
+  .practice-card-outer {
+    position: relative;
+    perspective: 1400px;
+    min-height: 340px;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid rgba(248, 113, 113, 0.7);
+      outline-offset: 4px;
+    }
+  }
+
+  .practice-card {
+    position: relative;
+    width: 100%;
+    min-height: 340px;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+  }
+
+  .practice-card.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .practice-card__face {
+    position: absolute;
+    inset: 0;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(17, 24, 39, 0.82);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    overflow-y: auto;
+    text-align: center;
+  }
+
+  .practice-card__face--back {
+    transform: rotateY(180deg);
+    background: rgba(17, 24, 39, 0.9);
+  }
+
+  .practice-card__face--correct {
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+
+  .practice-card__face--incorrect {
+    border-color: rgba(248, 113, 113, 0.5);
+  }
+
+  .practice-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  .practice-card__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.18);
+    color: rgba(226, 232, 240, 0.9);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+  }
+
+  .practice-card__badge--answer {
+    background: rgba(34, 197, 94, 0.18);
+  }
+
+  .practice-card__prompt {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #f3f4f6;
+    line-height: 1.4;
+  }
+
+  .practice-card__options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .practice-card__hint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(148, 163, 184, 0.85);
+  }
+
+  .practice-answer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .practice-answer__label {
+    margin: 0;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.9);
+  }
+
+  .practice-answer__text {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba(226, 232, 240, 0.95);
+  }
+
+  .practice-answer__your-choice {
+    margin: 0;
+    color: rgba(148, 163, 184, 0.9);
+  }
+
+  .practice-card__explanation {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: rgba(30, 41, 59, 0.75);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: rgba(203, 213, 225, 0.95);
+    font-size: 0.95rem;
+  }
+
+  .practice-card__answer {
+    margin: 0 auto;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: rgba(226, 232, 240, 0.95);
+    line-height: 1.5;
+  }
+
+  .practice-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+
+  .practice-controls__progress {
+    color: rgba(148, 163, 184, 0.85);
+    font-size: 0.95rem;
+  }
+
+  .practice-controls__buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.55rem 1.2rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: rgba(59, 130, 246, 0.15);
+      color: #e5e7eb;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+
+      &:hover,
+      &:focus-visible {
+        background: rgba(59, 130, 246, 0.25);
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        opacity: 0.55;
+        cursor: default;
+        transform: none;
+      }
+    }
+  }
+
   .lesson-grid {
     margin-top: 1.75rem;
   }
@@ -95,7 +464,7 @@
     padding: 0.75rem 1.5rem;
     font-weight: 600;
     font-size: 0.95rem;
-    background: linear-gradient(90deg, #f97316, #ef4444);
+    background: #ef4444;
     color: #f9fafb;
     cursor: pointer;
     transition: filter 0.2s ease;
@@ -341,7 +710,7 @@
       padding: 0.5rem 1.25rem;
       font-weight: 600;
       font-size: 0.9rem;
-      background: linear-gradient(90deg, #f97316, #ef4444);
+      background: #ef4444;
       color: #f9fafb;
       cursor: pointer;
       transition: filter 0.2s ease;
@@ -404,7 +773,7 @@
       padding: 0.6rem 1.4rem;
       font-weight: 600;
       font-size: 0.95rem;
-      background: linear-gradient(90deg, #f97316, #ef4444);
+      background: #ef4444;
       color: #f9fafb;
       cursor: pointer;
       transition: filter 0.2s ease;

@@ -1,245 +1,369 @@
 <div class="tab lessons-tab container-xl py-5">
-  <ng-container *ngIf="!selectedLesson; else lessonDetail">
-    <div class="row g-4 mb-4 align-items-center">
-      <div class="col-lg-8">
-        <h2>Lessons</h2>
-        <p>
-          Bite-sized concepts, quizzes, and scenarios to improve decision-making.
-        </p>
-      </div>
-    </div>
+  <ng-container [ngSwitch]="viewMode">
+    <ng-container *ngSwitchCase="'list'">
+      <section class="practice-sets">
+        <div class="practice-sets__header">
+          <div>
+            <p class="eyebrow">Practice Sets</p>
+            <h2>Quizlet-style reinforcement</h2>
+            <p>Short decks that reuse the quiz bank so you can drill concepts quickly.</p>
+          </div>
+        </div>
 
-    <div class="lesson-grid row row-cols-1 row-cols-md-3 g-4">
-      <div
-        class="col"
-        *ngFor="let lesson of lessons"
-        [attr.data-difficulty]="lesson.difficulty"
-      >
-        <article class="lesson-card h-100">
-          <header class="lesson-card__header">
-            <span class="lesson-card__difficulty">{{ lesson.difficulty | titlecase }}</span>
-            <h3 class="lesson-card__title">{{ lesson.title }}</h3>
-          </header>
-          <p class="lesson-card__description">
-            {{ lesson.description }}
+        <div class="row row-cols-1 row-cols-md-3 g-3">
+          <div class="col" *ngFor="let set of practiceSets">
+            <article class="practice-set-card h-100" [attr.data-difficulty]="set.difficulty">
+              <header class="practice-set-card__header">
+                <span class="practice-set-card__vibe">{{ set.vibe }}</span>
+                <h3 class="practice-set-card__title">{{ set.title }}</h3>
+                <p class="practice-set-card__difficulty">{{ set.difficulty | titlecase }}</p>
+              </header>
+              <p class="practice-set-card__description">
+                {{ set.description }}
+              </p>
+              <button type="button" class="practice-set-card__cta" (click)="startPracticeSet(set)">
+                Open practice
+              </button>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <div class="row g-4 mb-4 align-items-center">
+        <div class="col-lg-8">
+          <h2>Quizzes</h2>
+          <p>
+            Bite-sized concepts, quizzes, and scenarios to improve decision-making.
           </p>
-          <button type="button" class="lesson-card__cta" (click)="startLesson(lesson.difficulty)">
-            {{ lesson.cta }}
-          </button>
-        </article>
+        </div>
       </div>
-    </div>
 
-    <section class="lesson-history lesson-history--global mt-5">
-      <header class="lesson-history__header">
-        <h3>Quiz Results</h3>
-        <button
-          type="button"
-          class="lesson-history__refresh"
-          (click)="loadAllQuizResults()"
-          [disabled]="isAllResultsLoading"
+      <div class="lesson-grid row row-cols-1 row-cols-md-3 g-4">
+        <div
+          class="col"
+          *ngFor="let lesson of lessons"
+          [attr.data-difficulty]="lesson.difficulty"
         >
-          Refresh
-        </button>
-      </header>
-
-      <div *ngIf="isAllResultsLoading" class="lesson-feedback lesson-feedback--loading">
-        Loading quiz results…
+          <article class="lesson-card h-100">
+            <header class="lesson-card__header">
+              <span class="lesson-card__difficulty">{{ lesson.difficulty | titlecase }}</span>
+              <h3 class="lesson-card__title">{{ lesson.title }}</h3>
+            </header>
+            <p class="lesson-card__description">
+              {{ lesson.description }}
+            </p>
+            <button type="button" class="lesson-card__cta" (click)="startLesson(lesson.difficulty)">
+              {{ lesson.cta }}
+            </button>
+          </article>
+        </div>
       </div>
 
-      <div *ngIf="!isAllResultsLoading && allResultsError" class="lesson-feedback lesson-feedback--error">
-        {{ allResultsError }}
-      </div>
+      <section class="lesson-history lesson-history--global mt-5">
+        <header class="lesson-history__header">
+          <h3>Quiz Results</h3>
+          <button
+            type="button"
+            class="lesson-history__refresh"
+            (click)="loadAllQuizResults()"
+            [disabled]="isAllResultsLoading"
+          >
+            Refresh
+          </button>
+        </header>
 
-      <p
-        *ngIf="!isAllResultsLoading && !allResultsError && allQuizResults.length === 0"
-        class="lesson-feedback lesson-feedback--empty"
-      >
-        No quiz results yet. Complete a quiz to see your history.
-      </p>
+        <div *ngIf="isAllResultsLoading" class="lesson-feedback lesson-feedback--loading">
+          Loading quiz results…
+        </div>
 
-      <div
-        class="row row-cols-1 row-cols-md-3 g-3"
-        *ngIf="!isAllResultsLoading && !allResultsError && allQuizResults.length > 0"
-      >
-        <div class="col" *ngFor="let result of allQuizResults">
-          <div class="history-card">
-            <div class="history-card__meta">
-              <span
-                class="history-card__difficulty"
-                [ngClass]="'history-card__difficulty--' + result.difficulty"
-              >
-                {{ result.difficulty | titlecase }}
-              </span>
-              <time class="history-card__time">
-                {{ result.submittedAt | date : 'short' }}
-              </time>
-            </div>
-            <div class="history-card__score">
-              <strong>{{ result.correct }}</strong>
-              <span>/ {{ result.total }}</span>
-            </div>
-            <div class="history-card__percentage">
-              {{ result.percentage }}%
+        <div *ngIf="!isAllResultsLoading && allResultsError" class="lesson-feedback lesson-feedback--error">
+          {{ allResultsError }}
+        </div>
+
+        <p
+          *ngIf="!isAllResultsLoading && !allResultsError && allQuizResults.length === 0"
+          class="lesson-feedback lesson-feedback--empty"
+        >
+          No quiz results yet. Complete a quiz to see your history.
+        </p>
+
+        <div
+          class="row row-cols-1 row-cols-md-3 g-3"
+          *ngIf="!isAllResultsLoading && !allResultsError && allQuizResults.length > 0"
+        >
+          <div class="col" *ngFor="let result of allQuizResults">
+            <div class="history-card">
+              <div class="history-card__meta">
+                <span
+                  class="history-card__difficulty"
+                  [ngClass]="'history-card__difficulty--' + result.difficulty"
+                >
+                  {{ result.difficulty | titlecase }}
+                </span>
+                <time class="history-card__time">
+                  {{ result.submittedAt | date : 'short' }}
+                </time>
+              </div>
+              <div class="history-card__score">
+                <strong>{{ result.correct }}</strong>
+                <span>/ {{ result.total }}</span>
+              </div>
+              <div class="history-card__percentage">
+                {{ result.percentage }}%
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-  </ng-container>
+      </section>
+    </ng-container>
 
-  <ng-template #lessonDetail>
-    <div class="lesson-detail row g-4">
-      <div class="col-12">
-        <button type="button" class="lesson-detail__back" (click)="exitLesson()">Back to lessons</button>
-      </div>
+    <ng-container *ngSwitchCase="'practice'">
+      <div class="lesson-detail row g-4" *ngIf="activePracticeSet as activeSet">
+        <div class="col-12">
+          <button type="button" class="lesson-detail__back" (click)="exitPracticeSet()">Back to practice sets</button>
+        </div>
 
-      <div class="col-12">
-        <header class="lesson-detail__header">
-          <span class="lesson-detail__difficulty">{{ selectedLesson?.difficulty | titlecase }} Mode</span>
-          <h2 class="lesson-detail__title">{{ selectedLesson?.title }}</h2>
-          <p class="lesson-detail__description">
-            {{ selectedLesson?.description }}
-          </p>
-        </header>
-      </div>
+        <div class="col-12">
+          <header class="lesson-detail__header">
+            <span class="lesson-detail__difficulty">{{ activeSet.difficulty | titlecase }} Deck</span>
+            <h2 class="lesson-detail__title">{{ activeSet.title }}</h2>
+            <p class="lesson-detail__description">
+              {{ activeSet.description }}
+            </p>
+          </header>
+        </div>
 
-      <div class="col-12">
-        <section class="lesson-detail__body">
-          <div #quizTop></div>
-
-          <div *ngIf="isQuizLoading" class="lesson-feedback lesson-feedback--loading">
-            Loading quiz questions…
-          </div>
-
-          <div *ngIf="!isQuizLoading && loadError" class="lesson-feedback lesson-feedback--error">
-            <p>{{ loadError }}</p>
-            <button type="button" (click)="retryLoad()">Try again</button>
-          </div>
-
-          <ng-container *ngIf="!isQuizLoading && !loadError">
-            <div *ngIf="quizSubmitted && quizSummary" class="lesson-summary">
-              <h3 class="lesson-summary__title">Quiz complete!</h3>
-              <p class="lesson-summary__score">
-                {{ quizSummary.correct }} / {{ quizSummary.total }} correct ({{ quizSummary.percentage }}%)
-              </p>
+        <div class="col-12">
+          <section class="lesson-detail__body">
+            <div *ngIf="isPracticeLoading" class="lesson-feedback lesson-feedback--loading">
+              Loading practice set…
             </div>
 
-            <p *ngIf="quizQuestions.length === 0" class="lesson-feedback lesson-feedback--empty">
-              No quiz questions available right now. Please try another difficulty or come back later.
+            <div *ngIf="!isPracticeLoading && practiceError" class="lesson-feedback lesson-feedback--error">
+              <p>{{ practiceError }}</p>
+              <button type="button" (click)="startPracticeSet(activeSet)">Try again</button>
+            </div>
+
+            <p
+              *ngIf="!isPracticeLoading && !practiceError && practiceQuestions.length === 0"
+              class="lesson-feedback lesson-feedback--empty"
+            >
+              No practice cards came back for this difficulty. Try refreshing the deck.
             </p>
 
-            <article
-              class="lesson-question"
-              *ngFor="let question of quizQuestions; let questionIndex = index"
-            >
-              <header class="lesson-question__header">
-                <span class="lesson-question__index">Question {{ questionIndex + 1 }}</span>
-                <h3 class="lesson-question__prompt">{{ question.prompt }}</h3>
-              </header>
+            <ng-container *ngIf="!isPracticeLoading && !practiceError && activePracticeQuestion as practiceQuestion">
+              <div
+                class="practice-card-outer"
+                (click)="togglePracticeFlip()"
+                tabindex="0"
+                (keydown.enter)="togglePracticeFlip()"
+                (keydown.space)="togglePracticeFlip(); $event.preventDefault()"
+                role="button"
+                aria-pressed="{{ practiceIsFlipped }}"
+              >
+                <div class="practice-card" [class.is-flipped]="practiceIsFlipped">
+                  <article class="practice-card__face practice-card__face--front">
+                    <header class="practice-card__header">
+                      <span class="practice-card__badge">
+                        Card {{ practiceCurrentIndex + 1 }} / {{ practiceQuestions.length }}
+                      </span>
+                      <h4 class="practice-card__prompt">{{ practiceQuestion.prompt }}</h4>
+                    </header>
 
-              <ul class="lesson-question__options">
-                <li
-                  class="lesson-question__option"
-                  *ngFor="let option of question.options; let optionIndex = index"
-                >
+                    <div class="practice-card__hint">
+                      Click to reveal the answer.
+                    </div>
+                  </article>
+
+                  <article class="practice-card__face practice-card__face--back">
+                    <div class="practice-card__badge practice-card__badge--answer">Answer</div>
+
+                    <p class="practice-card__answer">
+                      {{ practiceAnswerText(practiceQuestion) || 'No answer provided for this card.' }}
+                    </p>
+                  </article>
+                </div>
+              </div>
+
+              <div class="practice-controls">
+                <div class="practice-controls__progress">
+                  Card {{ practiceCurrentIndex + 1 }} of {{ practiceQuestions.length }}
+                </div>
+                <div class="practice-controls__buttons">
+                  <button type="button" (click)="refreshPracticeSet()" [disabled]="isPracticeLoading">
+                    Refresh set
+                  </button>
+                  <button type="button" (click)="previousPracticeQuestion()" [disabled]="practiceCurrentIndex === 0">
+                    Previous
+                  </button>
                   <button
                     type="button"
-                    (click)="selectOption(question.id, optionIndex)"
-                    [class.is-selected]="selectedOptions[question.id] === optionIndex"
-                    [class.is-correct]="quizSubmitted && question.correctAnswerIndex === optionIndex"
-                    [class.is-incorrect]="
-                      quizSubmitted &&
-                      selectedOptions[question.id] === optionIndex &&
-                      question.correctAnswerIndex !== optionIndex
-                    "
-                    [disabled]="quizSubmitted"
-                    [attr.aria-pressed]="selectedOptions[question.id] === optionIndex"
+                    (click)="nextPracticeQuestion()"
+                    [disabled]="practiceCurrentIndex >= practiceQuestions.length - 1"
                   >
-                    <span class="option-label">
-                      {{ optionLabels[optionIndex] || (optionIndex + 1) }}
-                    </span>
-                    <span class="option-text">{{ option }}</span>
+                    Next
                   </button>
-                </li>
-              </ul>
-
-              <div
-                *ngIf="quizSubmitted"
-                class="lesson-question__feedback"
-                [class.lesson-question__feedback--correct]="isQuestionCorrect(question)"
-                [class.lesson-question__feedback--incorrect]="!isQuestionCorrect(question)"
-              >
-                <strong>{{ isQuestionCorrect(question) ? 'Correct!' : 'Incorrect.' }}</strong>
-                <span *ngIf="question.explanation"> {{ question.explanation }}</span>
-                <span
-                  *ngIf="
-                    !isQuestionCorrect(question) &&
-                    question.correctAnswerIndex !== undefined &&
-                    question.correctAnswerIndex !== null
-                  "
-                >
-                  Correct answer: {{ question.options[question.correctAnswerIndex] }}
-                </span>
+                </div>
               </div>
-            </article>
-
-            <div *ngIf="quizQuestions.length > 0" class="lesson-actions lesson-actions--bottom">
-              <p class="lesson-actions__status">
-                {{ answeredCount }} / {{ quizQuestions.length }} answered
-              </p>
-              <button
-                type="button"
-                class="lesson-actions__submit"
-                (click)="submitQuiz()"
-                [disabled]="!canSubmitQuiz"
-              >
-                {{ quizSubmitted ? 'Quiz submitted' : 'Submit quiz' }}
-              </button>
-            </div>
-          </ng-container>
-        </section>
-      </div>
-
-      <div class="col-12" *ngIf="resultSaveError">
-        <div class="lesson-feedback lesson-feedback--error">
-          {{ resultSaveError }}
+            </ng-container>
+          </section>
         </div>
       </div>
+    </ng-container>
 
-      <div class="col-12" *ngIf="recentResults.length > 0">
-        <section class="lesson-history">
-          <header class="lesson-history__header">
-            <h3>Recent Results</h3>
-            <span *ngIf="isSavingResult" class="lesson-history__status">Saving…</span>
+    <ng-container *ngSwitchCase="'lesson'">
+      <div class="lesson-detail row g-4">
+        <div class="col-12">
+          <button type="button" class="lesson-detail__back" (click)="exitLesson()">Back to lessons</button>
+        </div>
+
+        <div class="col-12">
+          <header class="lesson-detail__header">
+            <span class="lesson-detail__difficulty">{{ selectedLesson?.difficulty | titlecase }} Mode</span>
+            <h2 class="lesson-detail__title">{{ selectedLesson?.title }}</h2>
+            <p class="lesson-detail__description">
+              {{ selectedLesson?.description }}
+            </p>
           </header>
+        </div>
 
-          <div class="row row-cols-1 row-cols-md-3 g-3">
-            <div class="col" *ngFor="let result of recentResults">
-              <div class="history-card">
-                <div class="history-card__meta">
-                  <span
-                    class="history-card__difficulty"
-                    [ngClass]="'history-card__difficulty--' + result.difficulty"
+        <div class="col-12">
+          <section class="lesson-detail__body">
+            <div #quizTop></div>
+
+            <div *ngIf="isQuizLoading" class="lesson-feedback lesson-feedback--loading">
+              Loading quiz questions…
+            </div>
+
+            <div *ngIf="!isQuizLoading && loadError" class="lesson-feedback lesson-feedback--error">
+              <p>{{ loadError }}</p>
+              <button type="button" (click)="retryLoad()">Try again</button>
+            </div>
+
+            <ng-container *ngIf="!isQuizLoading && !loadError">
+              <div *ngIf="quizSubmitted && quizSummary" class="lesson-summary">
+                <h3 class="lesson-summary__title">Quiz complete!</h3>
+                <p class="lesson-summary__score">
+                  {{ quizSummary.correct }} / {{ quizSummary.total }} correct ({{ quizSummary.percentage }}%)
+                </p>
+              </div>
+
+              <p *ngIf="quizQuestions.length === 0" class="lesson-feedback lesson-feedback--empty">
+                No quiz questions available right now. Please try another difficulty or come back later.
+              </p>
+
+              <article
+                class="lesson-question"
+                *ngFor="let question of quizQuestions; let questionIndex = index"
+              >
+                <header class="lesson-question__header">
+                  <span class="lesson-question__index">Question {{ questionIndex + 1 }}</span>
+                  <h3 class="lesson-question__prompt">{{ question.prompt }}</h3>
+                </header>
+
+                <ul class="lesson-question__options">
+                  <li
+                    class="lesson-question__option"
+                    *ngFor="let option of question.options; let optionIndex = index"
                   >
-                    {{ result.difficulty | titlecase }}
+                    <button
+                      type="button"
+                      (click)="selectOption(question.id, optionIndex)"
+                      [class.is-selected]="selectedOptions[question.id] === optionIndex"
+                      [class.is-correct]="quizSubmitted && question.correctAnswerIndex === optionIndex"
+                      [class.is-incorrect]="
+                        quizSubmitted &&
+                        selectedOptions[question.id] === optionIndex &&
+                        question.correctAnswerIndex !== optionIndex
+                      "
+                      [disabled]="quizSubmitted"
+                      [attr.aria-pressed]="selectedOptions[question.id] === optionIndex"
+                    >
+                      <span class="option-label">
+                        {{ optionLabels[optionIndex] || (optionIndex + 1) }}
+                      </span>
+                      <span class="option-text">{{ option }}</span>
+                    </button>
+                  </li>
+                </ul>
+
+                <div
+                  *ngIf="quizSubmitted"
+                  class="lesson-question__feedback"
+                  [class.lesson-question__feedback--correct]="isQuestionCorrect(question)"
+                  [class.lesson-question__feedback--incorrect]="!isQuestionCorrect(question)"
+                >
+                  <strong>{{ isQuestionCorrect(question) ? 'Correct!' : 'Incorrect.' }}</strong>
+                  <span *ngIf="question.explanation"> {{ question.explanation }}</span>
+                  <span
+                    *ngIf="
+                      !isQuestionCorrect(question) &&
+                      question.correctAnswerIndex !== undefined &&
+                      question.correctAnswerIndex !== null
+                    "
+                  >
+                    Correct answer: {{ question.options[question.correctAnswerIndex] }}
                   </span>
-                  <time class="history-card__time">
-                    {{ result.submittedAt | date : 'short' }}
-                  </time>
                 </div>
-                <div class="history-card__score">
-                  <strong>{{ result.correct }}</strong>
-                  <span>/ {{ result.total }}</span>
-                </div>
-                <div class="history-card__percentage">
-                  {{ result.percentage }}%
+              </article>
+
+              <div *ngIf="quizQuestions.length > 0" class="lesson-actions lesson-actions--bottom">
+                <p class="lesson-actions__status">
+                  {{ answeredCount }} / {{ quizQuestions.length }} answered
+                </p>
+                <button
+                  type="button"
+                  class="lesson-actions__submit"
+                  (click)="submitQuiz()"
+                  [disabled]="!canSubmitQuiz"
+                >
+                  {{ quizSubmitted ? 'Quiz submitted' : 'Submit quiz' }}
+                </button>
+              </div>
+            </ng-container>
+          </section>
+        </div>
+
+        <div class="col-12" *ngIf="resultSaveError">
+          <div class="lesson-feedback lesson-feedback--error">
+            {{ resultSaveError }}
+          </div>
+        </div>
+
+        <div class="col-12" *ngIf="recentResults.length > 0">
+          <section class="lesson-history">
+            <header class="lesson-history__header">
+              <h3>Recent Results</h3>
+              <span *ngIf="isSavingResult" class="lesson-history__status">Saving…</span>
+            </header>
+
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+              <div class="col" *ngFor="let result of recentResults">
+                <div class="history-card">
+                  <div class="history-card__meta">
+                    <span
+                      class="history-card__difficulty"
+                      [ngClass]="'history-card__difficulty--' + result.difficulty"
+                    >
+                      {{ result.difficulty | titlecase }}
+                    </span>
+                    <time class="history-card__time">
+                      {{ result.submittedAt | date : 'short' }}
+                    </time>
+                  </div>
+                  <div class="history-card__score">
+                    <strong>{{ result.correct }}</strong>
+                    <span>/ {{ result.total }}</span>
+                  </div>
+                  <div class="history-card__percentage">
+                    {{ result.percentage }}%
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
-    </div>
-  </ng-template>
+    </ng-container>
+  </ng-container>
 </div>
