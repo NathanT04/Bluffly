@@ -8,7 +8,7 @@ import { SimulationTab } from './tabs/simulation-tab/simulation-tab';
 export const routes: Routes = [
   { path: 'home', component: HomeTab },
   { path: 'analyzer', component: AnalyzerTab },
-  { path: 'lessons', component: LessonsTab },
+  { path: 'quizzes', component: LessonsTab },
   { path: 'simulation', component: SimulationTab },
   { path: '', redirectTo: '/home', pathMatch: 'full' }
 ];
