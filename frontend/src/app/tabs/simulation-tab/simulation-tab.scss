@@ -93,9 +93,14 @@
 
   .play-layout {
     display: grid;
-    grid-template-columns: 1fr 280px;
+    grid-template-columns: minmax(0, 1fr) 280px;
     gap: 1.25rem;
     align-items: start;
+    transition: grid-template-columns 0.25s ease;
+  }
+
+  .play-layout.log-collapsed {
+    grid-template-columns: minmax(0, 1fr) 40px;
   }
 
   .table-shell {
@@ -113,8 +118,8 @@
     margin-bottom: 1.5rem;
 
     .phase-chip {
-      flex: 1 1 120px;
-      min-width: 110px;
+      flex: 1 1 150px;
+      min-width: 130px;
       padding: 0.75rem 1rem;
       border-radius: 12px;
       background: rgba(15, 118, 110, 0.15);
@@ -123,10 +128,12 @@
       align-items: center;
       gap: 0.75rem;
       border: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
 
       .step-index {
         width: 28px;
         height: 28px;
+        flex: 0 0 28px;
         border-radius: 50%;
         border: 1px solid currentColor;
         display: grid;
@@ -229,15 +236,40 @@
     border: 1px solid rgba(148, 163, 184, 0.2);
     padding: 1rem;
     max-height: 420px;
+    max-width: 280px;
     overflow-y: auto;
     color: #e2e8f0;
+    overflow: hidden;
+    transition: max-width 0.25s ease, padding 0.2s ease;
 
     .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
       font-size: 0.9rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: rgba(148, 163, 184, 0.9);
       margin-bottom: 0.75rem;
+
+      .log-toggle {
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: rgba(15, 23, 42, 0.8);
+        color: rgba(226, 232, 240, 0.95);
+        font-size: 0.7rem;
+        text-transform: none;
+        letter-spacing: 0;
+        padding: 0.2rem 0.6rem;
+        cursor: pointer;
+        white-space: nowrap;
+
+        &:hover {
+          background: rgba(30, 64, 175, 0.85);
+          color: #e5e7eb;
+        }
+      }
     }
 
     ul {
@@ -270,6 +302,33 @@
       .text {
         font-size: 0.9rem;
       }
+    }
+  }
+
+  .play-layout.log-collapsed {
+    .action-log {
+      max-width: 40px;
+      padding: 0.5rem 0.25rem;
+    }
+
+    .action-log .log-header {
+      justify-content: center;
+      margin-bottom: 0;
+    }
+
+    .action-log .log-header span {
+      display: none;
+    }
+
+    .action-log ul {
+      display: none;
+    }
+
+    .action-log .log-toggle {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 0.7rem;
+      padding: 0.25rem 0.2rem;
     }
   }
 
@@ -550,6 +609,48 @@
         gap: 1.5rem;
         flex-wrap: wrap;
         color: rgba(226, 232, 240, 0.85);
+
+        .column {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          min-width: 180px;
+        }
+
+        .section-label {
+          font-size: 0.75rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(148, 163, 184, 0.95);
+        }
+
+        .hands > div,
+        .payout-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          font-size: 0.9rem;
+        }
+
+        .player-name {
+          font-weight: 500;
+        }
+
+        .hand-name strong {
+          font-weight: 600;
+        }
+
+        .amount {
+          font-variant-numeric: tabular-nums;
+        }
+
+        .amount.positive {
+          color: #4ade80;
+        }
+
+        .amount.negative {
+          color: #f97373;
+        }
       }
     }
   }

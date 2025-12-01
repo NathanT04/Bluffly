@@ -18,7 +18,7 @@
     </div>
   </div>
 
-  <div class="play-layout" *ngIf="snapshot as s; else emptyState">
+  <div class="play-layout" [class.log-collapsed]="handLogCollapsed" *ngIf="snapshot as s; else emptyState">
     <div class="table-shell">
       <div class="phase-track">
         <div class="phase-chip" *ngFor="let phase of phaseFlow; let idx = index"
@@ -166,7 +166,15 @@
 
     <!-- Log moved outside the table, fixed right column -->
     <div class="action-log" *ngIf="actionLog.length">
-      <div class="log-header">Hand Log</div>
+      <div class="log-header">
+        <span>Hand Log</span>
+        <button
+          type="button"
+          class="log-toggle"
+          (click)="toggleHandLog()">
+          {{ handLogCollapsed ? 'Show log' : 'Hide log' }}
+        </button>
+      </div>
       <ul>
         <li *ngFor="let entry of actionLog; trackBy: trackLogEntry">
           <span class="time">{{ entry.timestamp | date:'shortTime' }}</span>
@@ -187,20 +195,20 @@
       <div class="hud-card">
         <div class="hand-summary">
           <div>
-            <span class="label">Phase</span>
+            <span class="label">Current phase</span>
             <strong>{{ s.phase | titlecase }}</strong>
           </div>
           <div>
-            <span class="label">Pot</span>
-            <strong>{{ s.pot }}</strong>
+            <span class="label">Pot size</span>
+            <strong>{{ s.pot }} chips</strong>
           </div>
           <div>
-            <span class="label">Call</span>
-            <strong>{{ s.callAmount || 0 }}</strong>
+            <span class="label">To call</span>
+            <strong>{{ s.callAmount || 0 }} chips</strong>
           </div>
           <div>
-            <span class="label">Min Raise</span>
-            <strong>{{ s.minRaiseTo }}</strong>
+            <span class="label">Min raise to</span>
+            <strong>{{ s.minRaiseTo }} chips</strong>
           </div>
         </div>
 
@@ -267,18 +275,37 @@
               </ng-container>
             </div>
             <div class="details">
-              <div class="hands" *ngIf="r.hands?.length; else basicHands">
-                <div *ngFor="let h of r.hands">
-                  {{ h.name }}: <strong>{{ h.handName || '—' }}</strong>
+              <div class="column">
+                <div class="section-label">Hands shown</div>
+                <div class="hands" *ngIf="r.hands?.length; else basicHands">
+                  <div *ngFor="let h of r.hands">
+                    <span class="player-name">{{ h.name }}</span>
+                    <span class="hand-name"><strong>{{ h.handName || '—' }}</strong></span>
+                  </div>
                 </div>
+                <ng-template #basicHands>
+                  <div *ngIf="r.hero">
+                    <span class="player-name">You</span>
+                    <span class="hand-name"><strong>{{ r.hero.handName || '—' }}</strong></span>
+                  </div>
+                  <div *ngIf="r.villain">
+                    <span class="player-name">Villain</span>
+                    <span class="hand-name"><strong>{{ r.villain.handName || '—' }}</strong></span>
+                  </div>
+                </ng-template>
               </div>
-              <ng-template #basicHands>
-                <div *ngIf="r.hero">Your hand: <strong>{{ r.hero.handName || '—' }}</strong></div>
-                <div *ngIf="r.villain">Villain: <strong>{{ r.villain.handName || '—' }}</strong></div>
-              </ng-template>
-              <div class="payouts" *ngIf="r.payouts">
-                <div *ngFor="let pl of s.players">
-                  {{ pl.name }}: <strong>{{ r.payouts[pl.id] ?? 0 }}</strong>
+              <div class="column" *ngIf="r.payouts">
+                <div class="section-label">Chip results</div>
+                <div
+                  class="payout-row"
+                  *ngFor="let pl of s.players">
+                  <span class="player-name">{{ pl.name }}</span>
+                  <span
+                    class="amount"
+                    [class.positive]="(r.payouts[pl.id] ?? 0) > 0"
+                    [class.negative]="(r.payouts[pl.id] ?? 0) < 0">
+                    {{ r.payouts[pl.id] ?? 0 }} chips
+                  </span>
                 </div>
               </div>
             </div>

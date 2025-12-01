@@ -27,6 +27,7 @@ export class SimulationTab {
   readonly phaseFlow: Phase[] = ['preflop', 'flop', 'turn', 'river', 'showdown'];
   actionLog: ActionLogEntry[] = [];
   showRaise = false;
+  handLogCollapsed = false;
 
   private lastActionSeen: string | null = null;
   private lastPhaseSeen: Phase | null = null;
@@ -142,6 +143,10 @@ export class SimulationTab {
 
   trackLogEntry(_index: number, entry: ActionLogEntry) {
     return entry.timestamp;
+  }
+
+  toggleHandLog() {
+    this.handLogCollapsed = !this.handLogCollapsed;
   }
 
   private doAct(action: 'fold'|'check'|'call'|'raise', amount?: number) {
