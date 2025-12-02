@@ -47,6 +47,9 @@ export class Homepage implements OnInit {
   }
 
   setActive(tab: string) {
+    if (!this.isAuthenticated && tab !== 'Home') {
+      return;
+    }
     this.active = tab;
   }
 
@@ -78,6 +81,7 @@ export class Homepage implements OnInit {
         this.isAuthenticated = false;
         this.user = null;
         this.loginError = null;
+        this.setActive('Home');
         console.log('Successfully logged out');
       },
       error: (error) => {

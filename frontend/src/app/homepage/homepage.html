@@ -1,7 +1,11 @@
 <div class="homepage">
   <div class="glow"></div>
 
-  <app-nav-bar [active]="active" (changeTab)="setActive($event)"></app-nav-bar>
+  <app-nav-bar
+    [active]="active"
+    [isAuthenticated]="isAuthenticated"
+    (changeTab)="setActive($event)"
+  ></app-nav-bar>
 
   <!-- User Profile Section (Top Right) - only show when authenticated -->
   <div class="user-section" *ngIf="isAuthenticated">
