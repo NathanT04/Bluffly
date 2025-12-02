@@ -1,6 +1,6 @@
 <nav class="navbar">
   <button
-    *ngFor="let tab of tabs"
+    *ngFor="let tab of visibleTabs"
     type="button"
     [class.active]="tab === active"
     (click)="select(tab)"
