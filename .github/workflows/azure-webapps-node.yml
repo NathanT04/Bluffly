@@ -42,17 +42,17 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - name: Install backend deps and test
-      working-directory: backend
+    - name: npm install, build, and test
       run: |
         npm install
-        npm test --if-present
+        npm run build --if-present
+        npm run test --if-present
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: backend
+        path: .
 
   deploy:
     permissions:
