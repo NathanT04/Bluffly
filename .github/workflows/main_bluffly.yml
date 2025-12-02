@@ -62,6 +62,11 @@ jobs:
           name: node-app
           path: .
 
+      - name: Zip backend package
+        run: |
+          cd backend
+          zip -r ../backend.zip .
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -75,5 +80,5 @@ jobs:
         with:
           app-name: 'Bluffly'
           slot-name: 'Production'
-          package: ./backend
+          package: ./backend.zip
           
