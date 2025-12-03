@@ -1,6 +1,6 @@
 {
   "/auth/*": {
-    "target": "http://localhost:3000",
+    "target": "https://bluffly.azurewebsites.net",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
