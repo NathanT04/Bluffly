@@ -37,19 +37,12 @@ app.use('/api/table', tableRoutes);
 app.use('/auth', authRoutes);
 app.use('/api', pageRoutes);
 
-// For production: serve Angular dist files
-// For development: let Angular dev server handle frontend
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'frontend/dist')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
-  });
-}
+// Serve Angular dist files (built in CI into frontend/dist)
+app.use(express.static(path.join(__dirname, 'frontend/dist')));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Catch-all route for SPA frontend
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
 app.use((req, res) => {

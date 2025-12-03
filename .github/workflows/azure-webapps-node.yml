@@ -24,7 +24,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: bluffly          # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: 'backend' # set this to the path to your web app project
+  AZURE_WEBAPP_PACKAGE_PATH: './backend.zip'      # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '20.x'                # set this to the node version to use
 
 permissions:
@@ -42,17 +42,30 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - name: npm install, build, and test
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm install
+
+    - name: Build frontend
+      working-directory: frontend
+      run: npm run build
+
+    - name: Copy frontend build into backend
+      shell: bash
       run: |
-        npm install
-        npm run build --if-present
-        npm run test --if-present
+        rm -rf backend/frontend/dist
+        mkdir -p backend/frontend/dist
+        cp -a frontend/dist/bluffly/browser/. backend/frontend/dist/
+
+    - name: Install backend dependencies
+      working-directory: backend
+      run: npm install
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: .
+        path: backend
 
   deploy:
     permissions:
@@ -68,6 +81,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: node-app
+        path: backend
+
+    - name: Zip backend package
+      run: |
+        cd backend
+        zip -r ../backend.zip .
 
     - name: 'Deploy to Azure WebApp'
       id: deploy-to-webapp
