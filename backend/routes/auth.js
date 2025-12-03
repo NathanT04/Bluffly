@@ -3,6 +3,8 @@ const googleClient = require('../config/google-auth');
 const userService = require('../services/userService');
 const router = express.Router();
 
+const frontendBaseUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:4200';
+
 // Initiate Google OAuth
 router.get('/google', (req, res) => {
   const authUrl = googleClient.generateAuthUrl({
@@ -23,7 +25,7 @@ router.get('/google/callback', async (req, res) => {
     const { code } = req.query;
     
     if (!code) {
-      return res.redirect('http://localhost:4200?error=no_code');
+      return res.redirect(`${frontendBaseUrl}?error=no_code`);
     }
 
     // Exchange code for tokens
@@ -58,11 +60,11 @@ router.get('/google/callback', async (req, res) => {
     req.session.isAuthenticated = true;
 
     // Redirect back to Angular homepage with success
-    res.redirect('http://localhost:4200?login=success');
+    res.redirect(`${frontendBaseUrl}?login=success`);
 
   } catch (error) {
     console.error('Google OAuth Error:', error);
-    res.redirect('http://localhost:4200?error=google_auth_failed');
+    res.redirect(`${frontendBaseUrl}?error=google_auth_failed`);
   }
 });
 
