@@ -40,7 +40,8 @@ app.use('/api', pageRoutes);
 // Serve Angular dist files (built in CI into frontend/dist)
 app.use(express.static(path.join(__dirname, 'frontend/dist')));
 
-app.get('*', (req, res) => {
+// Catch-all route for SPA frontend
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
