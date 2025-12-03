@@ -36,3 +36,13 @@ exports.findOrCreateOAuthUser = async ({ authProvider, providerId, email, name }
 
   return user;
 };
+
+exports.findUserById = async userId => {
+  const safeId = sanitizeString(userId);
+  if (!safeId) {
+    return null;
+  }
+
+  await connectMongoose();
+  return User.findById(safeId).lean().exec();
+};

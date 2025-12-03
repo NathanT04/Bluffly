@@ -56,7 +56,7 @@ router.get('/google/callback', async (req, res) => {
 
     // Store user info in session
     req.session.userId = dbUser.id;
-    req.session.user = { ...userInfo, dbId: dbUser.id };
+    req.session.user = { ...userInfo, dbId: dbUser.id, plan: dbUser.plan };
     req.session.isAuthenticated = true;
 
     // Redirect back to Angular homepage with success

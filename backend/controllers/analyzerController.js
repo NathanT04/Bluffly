@@ -1,6 +1,7 @@
 const equityService = require('../services/equityService');
 const { getGtoRecommendation } = require('../services/gtoSolverService');
 const { getPlayExplanation } = require('../services/geminiService');
+const userService = require('../services/userService');
 
 const CARD_PATTERN = /^(A|K|Q|J|T|9|8|7|6|5|4|3|2)(s|h|d|c)$/i;
 const MAX_BOARD_CARDS = 5;
@@ -70,6 +71,11 @@ const formatPotOddsRatio = equityPercentage => {
 
 exports.analyzeEquity = async (req, res, next) => {
   try {
+    const userId = req.session?.userId;
+    const user = userId ? await userService.findUserById(userId) : null;
+    const plan = user?.plan === 'premium' ? 'premium' : 'free';
+    const hasPremiumAccess = plan === 'premium';
+
     const hero = parseHand(req.body?.hero, 2);
     const board = parseBoard(req.body?.board ?? []);
 
@@ -96,26 +102,34 @@ exports.analyzeEquity = async (req, res, next) => {
       : undefined;
 
     const result = equityService.calculateHeroEquity(hero, board, iterations);
-    const gto = getGtoRecommendation(hero, board);
+    const gto = hasPremiumAccess
+      ? getGtoRecommendation(hero, board)
+      : {
+          status: 'unavailable',
+          message: 'Upgrade to premium to unlock GTO solver suggestions.'
+        };
 
     let aiExplanation = null;
-    try {
-      const potOddsRatio = formatPotOddsRatio(result?.equity?.percentage ?? 0);
-      aiExplanation = await getPlayExplanation({
-        hero,
-        board,
-        equityPercentage: result?.equity?.percentage ?? 0,
-        potOddsRatio,
-        gtoSummary: gto
-      });
-    } catch (geminiError) {
-      console.error('Failed to generate Gemini explanation', geminiError);
+    if (hasPremiumAccess) {
+      try {
+        const potOddsRatio = formatPotOddsRatio(result?.equity?.percentage ?? 0);
+        aiExplanation = await getPlayExplanation({
+          hero,
+          board,
+          equityPercentage: result?.equity?.percentage ?? 0,
+          potOddsRatio,
+          gtoSummary: gto
+        });
+      } catch (geminiError) {
+        console.error('Failed to generate Gemini explanation', geminiError);
+      }
     }
 
     return res.json({
       ...result,
       gto,
-      aiExplanation
+      aiExplanation,
+      plan
     });
   } catch (error) {
     return next(error);
