@@ -36,27 +36,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-
-    - name: Install frontend dependencies
-      working-directory: frontend
-      run: npm install
-
-    - name: Build frontend
-      working-directory: frontend
-      run: npm run build
-
-    - name: Copy frontend build into backend
-      shell: bash
-      run: |
-        rm -rf backend/frontend/dist
-        mkdir -p backend/frontend/dist
-        cp -a frontend/dist/bluffly/browser/. backend/frontend/dist/
-
     - name: Install backend dependencies
       working-directory: backend
       run: npm install
